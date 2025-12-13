@@ -1,0 +1,31 @@
+# Apache configuration for ForgedCore Receipt Generator
+
+# Enable error reporting (disable in production)
+# php_flag display_errors On
+# php_value error_reporting E_ALL
+
+# Set default charset
+AddDefaultCharset UTF-8
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^(config\.php|functions\.php|db_config\.php|composer\.(json|lock)|\.htaccess)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Enable PHP
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_value error_reporting E_ALL & ~E_NOTICE
+</IfModule>
+
+# URL Rewriting (optional - for cleaner URLs)
+# RewriteEngine On
+# RewriteBase /
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteRule ^([^\.]+)$ $1.php [NC,L]
+

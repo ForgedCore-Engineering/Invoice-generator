@@ -1,0 +1,14 @@
+{
+    "name": "forgedcore/receipt-generator",
+    "description": "ForgedCore Engineering Receipt Generator",
+    "type": "project",
+    "require": {
+        "php": ">=7.4",
+        "tecnickcom/tcpdf": "^6.10"
+    },
+    "autoload": {
+        "psr-4": {
+            "ForgedCore\\": "src/"
+        }
+    }
+}
