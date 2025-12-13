@@ -44,16 +44,18 @@ function getDB() {
                 $pdo = new PDO("mysql:host=" . $host . ";port=" . $port . ";charset=" . DB_CHARSET, DB_USER, DB_PASS, DB_OPTIONS);
                 $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
                 // Now connect with database name
-                $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
+                $dsn = "mysql:host=" . $host . ";port=" . $port . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
                 $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
                 // Initialize tables
                 initDB();
                 return $pdo;
             } catch (PDOException $e2) {
-                die("Database connection failed: " . $e2->getMessage() . "<br/>Please check your MySQL credentials in db_config.php");
+                // Don't output directly - let calling code handle it
+                throw new Exception("Database connection failed: " . $e2->getMessage() . ". Please check your MySQL credentials in db_config.php");
             }
         }
-        die("Database connection failed: " . $e->getMessage() . "<br/>Please check your MySQL credentials in db_config.php");
+        // Don't output directly - let calling code handle it
+        throw new Exception("Database connection failed: " . $e->getMessage() . ". Please check your MySQL credentials in db_config.php");
     }
 }
 
@@ -86,12 +88,15 @@ function initDB() {
 }
 
 // Initialize database on first load (only if connection succeeds)
-try {
-    $testConnection = getDB();
-    initDB();
-} catch (Exception $e) {
-    // Connection will be attempted again when actually needed
-    error_log("Initial database connection test failed: " . $e->getMessage());
+// Don't initialize here if called from AJAX endpoints - let them handle errors
+if (!defined('SKIP_DB_INIT')) {
+    try {
+        $testConnection = getDB();
+        initDB();
+    } catch (Exception $e) {
+        // Connection will be attempted again when actually needed
+        // Don't output anything - let calling code handle it
+    }
 }
 ?>
 
