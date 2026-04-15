@@ -58,13 +58,13 @@ try {
 
     $fr = $pdo->prepare("
         SELECT 
-            SUM(proj_val) as rev, 
-            SUM(proj_coll) as coll 
+            SUM(p_val) as rev, 
+            SUM(p_paid) as coll 
         FROM (
             SELECT 
                 SUBSTRING_INDEX(invoice_no, '/', 2) as prefix, 
-                total as proj_val, 
-                MAX(paid) as proj_coll 
+                total as p_val, 
+                MAX(paid) as p_paid 
             FROM clients $wc 
             GROUP BY prefix, total
         ) as sub

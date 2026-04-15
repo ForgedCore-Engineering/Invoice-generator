@@ -15,18 +15,19 @@ $db_err  = null;
 try {
     $pdo = getDB();
 
-    // Global stats
-    // Global stats - Grouped by project (prefix + total) to avoid double counting installments
+    // Global stats - Installment-aware aggregation
+    // Logic: Group by [Prefix + Total] to identify a Project.
+    // Project Value = the total. 
+    // Project Paid  = the highest 'paid' value recorded for that project (Latest Installment).
     $s = $pdo->query("
         SELECT 
-            COUNT(*) as c,
-            SUM(proj_val) as rev,
-            SUM(proj_coll) as coll
+            SUM(p_val) as rev,
+            SUM(p_paid) as coll
         FROM (
             SELECT 
                 SUBSTRING_INDEX(invoice_no, '/', 2) as prefix,
-                total as proj_val,
-                MAX(paid) as proj_coll
+                total as p_val,
+                MAX(paid) as p_paid
             FROM clients
             GROUP BY prefix, total
         ) as projects
@@ -37,7 +38,7 @@ try {
     $stats['collected']   = (float)$s['coll'];
     $stats['outstanding'] = $stats['revenue'] - $stats['collected'];
 
-    // Recent 10
+    // Recent 10 Receipts
     $recent = $pdo->query("
         SELECT id, name, contact, invoice_no, total, paid, date
         FROM clients ORDER BY id DESC LIMIT 10
