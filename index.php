@@ -15,22 +15,21 @@ $db_err  = null;
 try {
     $pdo = getDB();
 
-    // Global stats - Installment-aware aggregation
-    // Logic: Group by [Prefix + Total] to identify a Project.
-    // Project Value = the total. 
-    // Project Paid  = the highest 'paid' value recorded for that project (Latest Installment).
+    // Global stats - One Project Per Client Logic
+    // Accounts for installments by taking the latest/highest values for each prefix group
     $s = $pdo->query("
         SELECT 
-            SUM(p_val) as rev,
-            SUM(p_paid) as coll
+            SUM(latest_val) as rev,
+            SUM(max_coll) as coll
         FROM (
             SELECT 
                 SUBSTRING_INDEX(invoice_no, '/', 2) as prefix,
-                total as p_val,
-                MAX(paid) as p_paid
-            FROM clients
-            GROUP BY prefix, total
-        ) as projects
+                -- Take the total from the latest record (revisions might change total)
+                (SELECT total FROM clients c2 WHERE SUBSTRING_INDEX(c2.invoice_no, '/', 2) = SUBSTRING_INDEX(c1.invoice_no, '/', 2) ORDER BY id DESC LIMIT 1) as latest_val,
+                MAX(paid) as max_coll
+            FROM clients c1
+            GROUP BY prefix
+        ) as accounts
     ")->fetch();
     
     $stats['total']       = (int)$pdo->query("SELECT COUNT(*) FROM clients")->fetchColumn();
