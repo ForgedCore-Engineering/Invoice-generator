@@ -16,8 +16,23 @@ try {
     $pdo = getDB();
 
     // Global stats
-    $s = $pdo->query("SELECT COUNT(*) as c, COALESCE(SUM(total),0) as rev, COALESCE(SUM(paid),0) as coll FROM clients")->fetch();
-    $stats['total']       = (int)$s['c'];
+    // Global stats - Grouped by project (prefix + total) to avoid double counting installments
+    $s = $pdo->query("
+        SELECT 
+            COUNT(*) as c,
+            SUM(proj_val) as rev,
+            SUM(proj_coll) as coll
+        FROM (
+            SELECT 
+                SUBSTRING_INDEX(invoice_no, '/', 2) as prefix,
+                total as proj_val,
+                MAX(paid) as proj_coll
+            FROM clients
+            GROUP BY prefix, total
+        ) as projects
+    ")->fetch();
+    
+    $stats['total']       = (int)$pdo->query("SELECT COUNT(*) FROM clients")->fetchColumn();
     $stats['revenue']     = (float)$s['rev'];
     $stats['collected']   = (float)$s['coll'];
     $stats['outstanding'] = $stats['revenue'] - $stats['collected'];
@@ -28,15 +43,25 @@ try {
         FROM clients ORDER BY id DESC LIMIT 10
     ")->fetchAll(PDO::FETCH_ASSOC);
 
-    // Monthly (last 6 months)
+    // Monthly (last 6 months) - Project based aggregation
     $monthly = $pdo->query("
-        SELECT DATE_FORMAT(created_at,'%b') as lbl,
-               COALESCE(SUM(total),0) as rev,
-               COALESCE(SUM(paid),0)  as coll
-        FROM clients
-        WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-        GROUP BY YEAR(created_at), MONTH(created_at)
-        ORDER BY YEAR(created_at), MONTH(created_at)
+        SELECT 
+            lbl,
+            SUM(proj_val) as rev,
+            SUM(proj_coll) as coll
+        FROM (
+            SELECT 
+                DATE_FORMAT(created_at,'%b') as lbl,
+                MAX(total) as proj_val,
+                MAX(paid) as proj_coll,
+                YEAR(created_at) as y,
+                MONTH(created_at) as m
+            FROM clients
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+            GROUP BY SUBSTRING_INDEX(invoice_no, '/', 2), total, YEAR(created_at), MONTH(created_at)
+        ) as sub
+        GROUP BY y, m
+        ORDER BY y, m
     ")->fetchAll(PDO::FETCH_ASSOC);
 
     foreach ($monthly as $m) {

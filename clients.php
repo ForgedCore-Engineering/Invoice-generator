@@ -56,9 +56,22 @@ try {
     $sr->execute($params);
     $rows = $sr->fetchAll(PDO::FETCH_ASSOC);
 
-    $fr = $pdo->prepare("SELECT COUNT(*) as c, COALESCE(SUM(total),0) as rev, COALESCE(SUM(paid),0) as coll FROM clients $wc");
+    $fr = $pdo->prepare("
+        SELECT 
+            SUM(proj_val) as rev, 
+            SUM(proj_coll) as coll 
+        FROM (
+            SELECT 
+                SUBSTRING_INDEX(invoice_no, '/', 2) as prefix, 
+                total as proj_val, 
+                MAX(paid) as proj_coll 
+            FROM clients $wc 
+            GROUP BY prefix, total
+        ) as sub
+    ");
     $fr->execute($params);
     $fs = $fr->fetch(PDO::FETCH_ASSOC);
+    $fs['c'] = $total_records;
 
 } catch (Exception $e) {
     $db_err = $e->getMessage();
