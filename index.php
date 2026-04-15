@@ -15,26 +15,22 @@ $db_err  = null;
 try {
     $pdo = getDB();
 
-    // Global stats - One Project Per Client Logic
-    // Accounts for installments by taking the latest/highest values for each prefix group
+    // Global stats - One Project Per Client Logic (MySQL Compatible)
     $s = $pdo->query("
         SELECT 
-            SUM(latest_val) as rev,
-            SUM(max_coll) as coll
-        FROM (
-            SELECT 
-                SUBSTRING_INDEX(invoice_no, '/', 2) as prefix,
-                -- Take the total from the latest record (revisions might change total)
-                (SELECT total FROM clients c2 WHERE SUBSTRING_INDEX(c2.invoice_no, '/', 2) = SUBSTRING_INDEX(c1.invoice_no, '/', 2) ORDER BY id DESC LIMIT 1) as latest_val,
-                MAX(paid) as max_coll
-            FROM clients c1
+            SUM(c.total) as rev,
+            SUM(c.paid) as coll
+        FROM clients c
+        INNER JOIN (
+            SELECT SUBSTRING_INDEX(invoice_no, '/', 2) as prefix, MAX(id) as max_id
+            FROM clients
             GROUP BY prefix
-        ) as accounts
+        ) as latest ON c.id = latest.max_id
     ")->fetch();
     
     $stats['total']       = (int)$pdo->query("SELECT COUNT(*) FROM clients")->fetchColumn();
-    $stats['revenue']     = (float)$s['rev'];
-    $stats['collected']   = (float)$s['coll'];
+    $stats['revenue']     = (float)($s['rev'] ?? 0);
+    $stats['collected']   = (float)($s['coll'] ?? 0);
     $stats['outstanding'] = $stats['revenue'] - $stats['collected'];
 
     // Recent 10 Receipts
@@ -43,7 +39,7 @@ try {
         FROM clients ORDER BY id DESC LIMIT 10
     ")->fetchAll(PDO::FETCH_ASSOC);
 
-    // Monthly (last 6 months) - Project based aggregation
+    // Monthly (last 6 months) - Project based aggregation (MySQL Compatible)
     $monthly = $pdo->query("
         SELECT 
             lbl,
@@ -58,7 +54,7 @@ try {
                 MONTH(created_at) as m
             FROM clients
             WHERE created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-            GROUP BY SUBSTRING_INDEX(invoice_no, '/', 2), total, YEAR(created_at), MONTH(created_at)
+            GROUP BY SUBSTRING_INDEX(invoice_no, '/', 2), y, m
         ) as sub
         GROUP BY y, m
         ORDER BY y, m

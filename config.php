@@ -34,28 +34,22 @@ function getDB() {
         // If database doesn't exist, try to create it
         if ($e->getCode() == 1049) {
             try {
-                // Handle host:port format
                 $host = DB_HOST;
                 $port = '3306';
                 if (strpos($host, ':') !== false) {
                     list($host, $port) = explode(':', $host, 2);
                 }
-                // Connect without database name to create it
                 $pdo = new PDO("mysql:host=" . $host . ";port=" . $port . ";charset=" . DB_CHARSET, DB_USER, DB_PASS, DB_OPTIONS);
                 $pdo->exec("CREATE DATABASE IF NOT EXISTS `" . DB_NAME . "` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-                // Now connect with database name
                 $dsn = "mysql:host=" . $host . ";port=" . $port . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
                 $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
-                // Initialize tables
                 initDB();
                 return $pdo;
             } catch (PDOException $e2) {
-                // Don't output directly - let calling code handle it
-                throw new Exception("Database connection failed: " . $e2->getMessage() . ". Please check your MySQL credentials in db_config.php");
+                throw new Exception("Database connection failed: " . $e2->getMessage());
             }
         }
-        // Don't output directly - let calling code handle it
-        throw new Exception("Database connection failed: " . $e->getMessage() . ". Please check your MySQL credentials in db_config.php");
+        throw new Exception("Database connection failed: " . $e->getMessage());
     }
 }
 

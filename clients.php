@@ -58,16 +58,14 @@ try {
 
     $fr = $pdo->prepare("
         SELECT 
-            SUM(latest_val) as rev, 
-            SUM(max_coll) as coll 
-        FROM (
-            SELECT 
-                SUBSTRING_INDEX(invoice_no, '/', 2) as prefix, 
-                (SELECT total FROM clients c2 WHERE SUBSTRING_INDEX(c2.invoice_no, '/', 2) = SUBSTRING_INDEX(c1.invoice_no, '/', 2) ORDER BY id DESC LIMIT 1) as latest_val,
-                MAX(paid) as max_coll 
-            FROM clients $wc 
+            SUM(c.total) as rev, 
+            SUM(c.paid) as coll 
+        FROM clients c
+        INNER JOIN (
+            SELECT SUBSTRING_INDEX(invoice_no, '/', 2) as prefix, MAX(id) as max_id
+            FROM clients $wc
             GROUP BY prefix
-        ) as sub
+        ) as latest ON c.id = latest.max_id
     ");
     $fr->execute($params);
     $fs = $fr->fetch(PDO::FETCH_ASSOC);
