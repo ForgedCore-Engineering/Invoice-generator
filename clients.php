@@ -122,18 +122,18 @@ require_once __DIR__ . '/includes/header.php';
 </form>
 
 <!-- ── Mini Stats ── -->
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-  <div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rs);padding:13px 16px">
-    <div style="font-size:10.5px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Total Results</div>
-    <div style="font-size:19px;font-weight:700;color:var(--txt)"><?= number_format($total_records) ?> <span style="font-size:13px;font-weight:400;color:var(--txt3)">receipts</span></div>
+<div class="sg-3">
+  <div class="mstat">
+    <div class="mstat-lbl">Total Results</div>
+    <div class="mstat-val"><?= number_format($total_records) ?> <span class="mstat-sub">receipts</span></div>
   </div>
-  <div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rs);padding:13px 16px">
-    <div style="font-size:10.5px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Total Value</div>
-    <div style="font-size:19px;font-weight:700;color:var(--blue)">GH₵ <?= number_format($fs['rev'],2) ?></div>
+  <div class="mstat">
+    <div class="mstat-lbl">Total Value</div>
+    <div class="mstat-val" style="color:var(--blue)">GH₵ <?= number_format($fs['rev'],2) ?></div>
   </div>
-  <div style="background:var(--card);border:1px solid var(--br);border-radius:var(--rs);padding:13px 16px">
-    <div style="font-size:10.5px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Collected</div>
-    <div style="font-size:19px;font-weight:700;color:var(--green)">GH₵ <?= number_format($fs['coll'],2) ?></div>
+  <div class="mstat">
+    <div class="mstat-lbl">Collected</div>
+    <div class="mstat-val" style="color:var(--green)">GH₵ <?= number_format($fs['coll'],2) ?></div>
   </div>
 </div>
 
@@ -156,7 +156,7 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 
   <?php else: ?>
-  <div class="tw">
+  <div class="tw tw-desktop">
     <table>
       <thead>
         <tr>
@@ -219,6 +219,41 @@ require_once __DIR__ . '/includes/header.php';
         <?php endforeach; ?>
       </tbody>
     </table>
+  </div>
+
+  <div class="mob-list">
+    <?php foreach ($rows as $r):
+      $bal  = (float)$r['total'] - (float)$r['paid'];
+      $paid = (float)$r['paid'];
+      if ($bal <= 0)   { $st='paid';    $sl='Paid'; }
+      elseif ($paid>0) { $st='partial'; $sl='Partial'; }
+      else             { $st='unpaid';  $sl='Unpaid'; }
+      $init = strtoupper(substr(trim($r['name']),0,2));
+    ?>
+    <article class="rcard">
+      <div class="rcard-top">
+        <div class="cc">
+          <div class="av"><?= htmlspecialchars($init) ?></div>
+          <div>
+            <div class="cn"><?= htmlspecialchars($r['name']) ?></div>
+            <div class="csub"><?= htmlspecialchars($r['contact']) ?></div>
+          </div>
+        </div>
+        <span class="badge bg-<?= $st ?>"><span class="bdot"></span><?= $sl ?></span>
+      </div>
+      <div class="rcard-meta">
+        <div><span>Invoice</span><strong style="font-family:monospace"><?= htmlspecialchars($r['invoice_no']) ?></strong></div>
+        <div><span>Date</span><strong><?= htmlspecialchars($r['date']) ?></strong></div>
+        <div><span>Total</span><strong class="am-cell">GH₵ <?= number_format($r['total'],2) ?></strong></div>
+        <div><span>Balance</span><strong class="am-cell <?= $bal<=0?'am-zero':($paid>0?'am-part':'am-full') ?>">GH₵ <?= number_format(max(0,$bal),2) ?></strong></div>
+      </div>
+      <div class="rcard-foot">
+        <a href="view-receipt.php?id=<?= $r['id'] ?>" class="btn btn-b btn-sm">View</a>
+        <a href="edit-receipt.php?id=<?= $r['id'] ?>" class="btn btn-s btn-sm">Edit</a>
+        <button type="button" class="btn btn-d btn-sm" onclick="confirmDel(<?= $r['id'] ?>, '<?= htmlspecialchars(addslashes($r['name'])) ?>')">Delete</button>
+      </div>
+    </article>
+    <?php endforeach; ?>
   </div>
 
   <!-- Pagination -->

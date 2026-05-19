@@ -10,7 +10,7 @@ require_once __DIR__ . '/includes/header.php';
 <div class="g2-form">
 
   <!-- ── Form Card ── -->
-  <div class="card">
+  <div class="card card-form">
     <div class="card-hdr">
       <div>
         <div class="card-title">Receipt Details</div>
@@ -24,7 +24,9 @@ require_once __DIR__ . '/includes/header.php';
 
           <div class="fg">
             <label class="req" for="name">Client Name</label>
-            <input type="text" id="name" name="name" placeholder="e.g. Kwame Mensah" required autocomplete="off">
+            <div class="ac-wrap">
+              <input type="text" id="name" name="name" placeholder="e.g. Kwame Mensah" required autocomplete="off" aria-autocomplete="list" aria-controls="clientAcList">
+            </div>
           </div>
 
           <div class="fg">
@@ -376,5 +378,6 @@ function loadImg(url) {
   });
 }
 </script>
+<script src="assets/client-autocomplete.js"></script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

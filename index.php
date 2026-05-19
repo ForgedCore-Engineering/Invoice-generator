@@ -135,7 +135,7 @@ require_once __DIR__ . '/includes/header.php';
       <a href="new-receipt.php" class="btn btn-p">Create Receipt</a>
     </div>
     <?php else: ?>
-    <div class="tw">
+    <div class="tw tw-desktop">
       <table>
         <thead>
           <tr>
@@ -174,6 +174,36 @@ require_once __DIR__ . '/includes/header.php';
         </tbody>
       </table>
     </div>
+
+    <div class="mob-list">
+      <?php foreach ($recent as $r):
+        $bal  = (float)$r['total'] - (float)$r['paid'];
+        $paid = (float)$r['paid'];
+        if ($bal <= 0)   { $st='paid';    $sl='Paid'; }
+        elseif ($paid>0) { $st='partial'; $sl='Partial'; }
+        else             { $st='unpaid';  $sl='Unpaid'; }
+        $init = strtoupper(substr(trim($r['name']),0,2));
+      ?>
+      <a href="view-receipt.php?id=<?= $r['id'] ?>" class="rcard" style="text-decoration:none;color:inherit;display:block">
+        <div class="rcard-top">
+          <div class="cc">
+            <div class="av"><?= htmlspecialchars($init) ?></div>
+            <div>
+              <div class="cn"><?= htmlspecialchars($r['name']) ?></div>
+              <div class="csub"><?= htmlspecialchars($r['contact']) ?></div>
+            </div>
+          </div>
+          <span class="badge bg-<?= $st ?>"><span class="bdot"></span><?= $sl ?></span>
+        </div>
+        <div class="rcard-meta">
+          <div><span>Invoice</span><strong style="font-family:monospace"><?= htmlspecialchars($r['invoice_no']) ?></strong></div>
+          <div><span>Date</span><strong><?= htmlspecialchars($r['date']) ?></strong></div>
+          <div><span>Total</span><strong class="am-cell">GH₵ <?= number_format($r['total'],2) ?></strong></div>
+        </div>
+      </a>
+      <?php endforeach; ?>
+    </div>
+
     <?php endif; ?>
   </div>
 

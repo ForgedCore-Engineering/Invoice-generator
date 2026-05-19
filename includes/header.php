@@ -527,6 +527,10 @@ tbody tr:hover td{background:var(--card-h)}
 .inf-item+.inf-item{border-left:1px solid var(--br);padding-left:16px;margin-left:16px}
 .inf-lbl{font-size:10.5px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
 .inf-val{font-size:13.5px;color:var(--txt);font-weight:500}
+.breadcrumb{
+  display:flex;align-items:center;gap:8px;margin-bottom:20px;
+  font-size:12.5px;color:var(--txt3);flex-wrap:wrap;
+}
 
 /* ════════════════════════════════════════════
    AMOUNT COLOURS
@@ -535,6 +539,72 @@ tbody tr:hover td{background:var(--card-h)}
 .am-zero{color:var(--green)}
 .am-part{color:var(--ylw)}
 .am-full{color:var(--red)}
+
+/* ════════════════════════════════════════════
+   MINI STATS (3-col)
+════════════════════════════════════════════ */
+.sg-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.mstat{
+  background:var(--card);border:1px solid var(--br);border-radius:var(--rs);
+  padding:13px 16px;
+}
+.mstat-lbl{
+  font-size:10.5px;color:var(--txt3);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:4px;
+}
+.mstat-val{font-size:19px;font-weight:700;color:var(--txt);line-height:1.2}
+.mstat-val .mstat-sub{font-size:13px;font-weight:400;color:var(--txt3)}
+
+/* ════════════════════════════════════════════
+   MOBILE RECEIPT CARDS
+════════════════════════════════════════════ */
+.mob-list{display:none;flex-direction:column}
+.rcard{
+  padding:14px 16px;border-bottom:1px solid var(--br);
+}
+.rcard:last-child{border-bottom:none}
+.rcard-top{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:10px;margin-bottom:10px;
+}
+.rcard-meta{
+  display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;
+  font-size:12px;margin-bottom:12px;
+}
+.rcard-meta > div > span{
+  display:block;font-size:10px;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px;
+}
+.rcard-meta strong{color:var(--txt);font-weight:600;font-size:12.5px}
+.rcard-foot{display:flex;gap:6px;flex-wrap:wrap}
+.rcard-foot .btn{flex:1;min-width:0;justify-content:center;padding:8px 10px}
+.rcard-foot .btn svg{margin:0}
+
+/* ════════════════════════════════════════════
+   CLIENT AUTOCOMPLETE
+════════════════════════════════════════════ */
+.ac-wrap{position:relative}
+.ac-list{
+  position:absolute;left:0;right:0;top:calc(100% + 4px);
+  background:var(--card);border:1px solid var(--br2);
+  border-radius:var(--rs);box-shadow:var(--sh);
+  z-index:80;max-height:240px;overflow-y:auto;display:none;
+}
+.ac-list.show{display:block}
+.ac-item{
+  display:block;width:100%;text-align:left;
+  padding:10px 12px;cursor:pointer;border:none;border-bottom:1px solid var(--br);
+  background:transparent;color:inherit;font-family:inherit;
+  transition:background .12s;
+}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover,.ac-item.active{background:var(--card-h)}
+.ac-item-name{display:block;font-size:13px;font-weight:600;color:var(--txt)}
+.ac-item-sub{display:block;font-size:11px;color:var(--txt3);margin-top:2px}
+.ac-hint{font-size:11px;color:var(--acc);margin-top:6px;display:none}
+.ac-hint.show{display:block}
+.card-form{overflow:visible}
+.card-form .card-body{overflow:visible}
 
 /* ════════════════════════════════════════════
    SPINNER
@@ -607,21 +677,38 @@ tbody tr:hover td{background:var(--card-h)}
   .pg{padding:16px 14px}
   .hdr{padding:0 12px}
   .fgrid{grid-template-columns:1fr}
+  .fgrid .fg{margin-bottom:12px}
+  .inf-item{min-width:100%;flex:1 1 100%}
   .inf-item+.inf-item{
     border-left:none;padding-left:0;margin-left:0;
     border-top:1px solid var(--br);padding-top:12px;
   }
   .sg{grid-template-columns:repeat(2,1fr);gap:10px}
-  .fbar{gap:6px}
-  .fbar .f-input{width:100%}
+  .sg-3{grid-template-columns:1fr}
+  .fbar{gap:8px}
+  .fbar .f-input,.fbar .f-sel,.fbar .btn{width:100%;justify-content:center}
+  .sbox{flex:1 1 100%;min-width:unset}
+  .tw-desktop{display:none}
+  .mob-list{display:flex}
+  .card-hdr{flex-wrap:wrap;align-items:flex-start}
+  .pag{flex-direction:column;align-items:stretch;text-align:center;gap:12px}
+  .pag-btns{justify-content:center;flex-wrap:wrap}
+  .toast{max-width:calc(100vw - 32px);min-width:0}
+  .tw-c{left:16px;right:16px}
+  table{min-width:0}
 }
 @media(max-width:640px){
   .bottom-nav{display:flex}
   .main{margin-bottom:var(--bnh)}
   .tw-c{bottom:calc(var(--bnh) + 10px)}
   .sg{grid-template-columns:repeat(2,1fr)}
-  .hdr-acts .btn-p span{display:none} /* hide "New Receipt" text, keep icon */
+  .hdr-acts .btn-p span{display:none}
   .ph h1{font-size:14px}
+  .ph p{display:none}
+  .mstat-val{font-size:17px}
+  .rcard-meta{grid-template-columns:1fr}
+  .rcard-foot .btn{flex:1 1 calc(50% - 3px)}
+  .rcard-foot .btn:first-child{flex:1 1 100%}
 }
 @media(max-width:420px){
   .sg{grid-template-columns:1fr}
@@ -630,7 +717,10 @@ tbody tr:hover td{background:var(--card-h)}
   .sc-val{font-size:18px}
   .card-body{padding:14px}
   .card-hdr{padding:12px 14px}
-  .pg{padding:12px 10px}
+  .pg{padding:12px 10px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0))}
+  .modal{padding:18px}
+  .m-acts{justify-content:stretch}
+  .m-acts .btn{flex:1;justify-content:center}
 }
 </style>
 </head>
