@@ -793,7 +793,7 @@ tbody tr:hover td{background:var(--card-h)}
             <svg class="ni-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8zm0 3h8v2H8z"/></svg>
             New Payslip
           </a>
-          <a href="payslips.php" class="ni <?= in_array($current_page,['payslips.php','view-payslip.php'])?'active':'' ?>">
+          <a href="payslips.php" class="ni <?= in_array($current_page,['payslips.php','view-payslip.php','edit-payslip.php'])?'active':'' ?>">
             <svg class="ni-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 8h10v2H7zm0 4h10v2H7zm0 4h6v2H7z"/></svg>
             All Payslips
           </a>

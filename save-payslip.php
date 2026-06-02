@@ -47,6 +47,12 @@ if ($amount_paid < 0) {
     exit;
 }
 
+if ($amount_paid > $amount_due) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Amount paid cannot be greater than amount supposed to be paid']);
+    exit;
+}
+
 try {
     $pdo = getDB();
     $stmt = $pdo->prepare("

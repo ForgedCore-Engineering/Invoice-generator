@@ -86,12 +86,17 @@ function initDB() {
                 issue_date VARCHAR(255) NOT NULL,
                 pdf_file VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 PRIMARY KEY (id),
                 UNIQUE KEY uq_payslip_no (payslip_no),
                 INDEX idx_payslip_created_at (created_at),
                 INDEX idx_full_name (full_name)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
+        $hasUpdatedAt = $pdo->query("SHOW COLUMNS FROM payslips LIKE 'updated_at'")->fetch();
+        if (!$hasUpdatedAt) {
+            $pdo->exec("ALTER TABLE payslips ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+        }
     } catch (PDOException $e) {
         // If getDB() fails, we can't initialize
         error_log("Database initialization error: " . $e->getMessage());

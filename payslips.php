@@ -82,6 +82,10 @@ require_once __DIR__ . '/includes/header.php';
     <div class="mstat-lbl">Amount Paid</div>
     <div class="mstat-val" style="color:var(--green)">GH₵ <?= number_format((float)($stats['paid'] ?? 0), 2) ?></div>
   </div>
+  <div class="mstat">
+    <div class="mstat-lbl">Outstanding</div>
+    <div class="mstat-val" style="color:var(--red)">GH₵ <?= number_format(max(0, (float)($stats['due'] ?? 0) - (float)($stats['paid'] ?? 0)), 2) ?></div>
+  </div>
 </div>
 
 <div class="card">
@@ -103,12 +107,19 @@ require_once __DIR__ . '/includes/header.php';
           <th>Services</th>
           <th>Supposed To Pay</th>
           <th>Paid</th>
+          <th>Left</th>
+          <th>Status</th>
           <th>Date</th>
           <th style="text-align:right">Actions</th>
         </tr>
       </thead>
       <tbody>
-      <?php foreach ($rows as $r): ?>
+      <?php foreach ($rows as $r):
+        $left = max(0, (float)$r['amount_due'] - (float)$r['amount_paid']);
+        if ($left <= 0) { $st = 'bg-paid'; $sl = 'Fully Paid'; }
+        elseif ((float)$r['amount_paid'] > 0) { $st = 'bg-partial'; $sl = 'Partially Paid'; }
+        else { $st = 'bg-unpaid'; $sl = 'Unpaid'; }
+      ?>
         <tr>
           <td><?= (int)$r['id'] ?></td>
           <td><?= htmlspecialchars($r['full_name']) ?></td>
@@ -116,8 +127,16 @@ require_once __DIR__ . '/includes/header.php';
           <td><?= htmlspecialchars($r['service']) ?></td>
           <td class="am-cell">GH₵ <?= number_format((float)$r['amount_due'], 2) ?></td>
           <td class="am-cell">GH₵ <?= number_format((float)$r['amount_paid'], 2) ?></td>
+          <td class="am-cell <?= $left > 0 ? 'am-full' : 'am-zero' ?>">GH₵ <?= number_format($left, 2) ?></td>
+          <td><span class="badge <?= $st ?>"><span class="bdot"></span><?= $sl ?></span></td>
           <td><?= htmlspecialchars($r['issue_date']) ?></td>
-          <td style="text-align:right"><a class="btn btn-b btn-sm" href="view-payslip.php?id=<?= (int)$r['id'] ?>">View</a></td>
+          <td>
+            <div class="acts" style="justify-content:flex-end">
+              <a class="btn btn-b btn-sm" href="view-payslip.php?id=<?= (int)$r['id'] ?>">View</a>
+              <a class="btn btn-s btn-sm" href="edit-payslip.php?id=<?= (int)$r['id'] ?>">Edit</a>
+              <button class="btn btn-d btn-sm" type="button" onclick="confirmDel(<?= (int)$r['id'] ?>, '<?= htmlspecialchars(addslashes($r['full_name'])) ?>')">Delete</button>
+            </div>
+          </td>
         </tr>
       <?php endforeach; ?>
       </tbody>
@@ -140,5 +159,54 @@ require_once __DIR__ . '/includes/header.php';
   <?php endif; ?>
   <?php endif; ?>
 </div>
+
+<div class="overlay" id="delOverlay">
+  <div class="modal">
+    <h3>Delete Payslip?</h3>
+    <p>
+      You are about to permanently delete the payslip for
+      <strong id="delName" style="color:var(--txt)"></strong>.
+      This action cannot be undone.
+    </p>
+    <div class="m-acts">
+      <button class="btn btn-s" onclick="document.getElementById('delOverlay').classList.remove('show')">Cancel</button>
+      <button class="btn btn-d" id="delBtn" onclick="doDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let _delId = null;
+function confirmDel(id, name) {
+  _delId = id;
+  document.getElementById('delName').textContent = name;
+  document.getElementById('delOverlay').classList.add('show');
+}
+async function doDelete() {
+  if (!_delId) return;
+  const btn = document.getElementById('delBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div>';
+  try {
+    const r = await fetch('delete-payslip.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: _delId })
+    });
+    const result = await r.json();
+    if (r.ok && result.success) {
+      document.getElementById('delOverlay').classList.remove('show');
+      toast('Payslip deleted successfully');
+      setTimeout(() => location.reload(), 900);
+    } else {
+      throw new Error(result.error || 'Delete failed');
+    }
+  } catch (e) {
+    btn.disabled = false;
+    btn.innerHTML = 'Delete';
+    toast('Error: ' + e.message, 'err');
+  }
+}
+</script>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>

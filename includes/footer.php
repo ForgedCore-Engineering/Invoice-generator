@@ -21,7 +21,7 @@
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h8v2H6zm10 0h2v2h-2zm-6-4h8v2h-8z"/></svg>
     <span>Receipts</span>
   </a>
-  <a href="payslips.php" class="bn <?= in_array($cp,['payslips.php','view-payslip.php'])?'active':'' ?>">
+  <a href="payslips.php" class="bn <?= in_array($cp,['payslips.php','view-payslip.php','edit-payslip.php'])?'active':'' ?>">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 8h10v2H7zm0 4h10v2H7zm0 4h6v2H7z"/></svg>
     <span>Records</span>
   </a>

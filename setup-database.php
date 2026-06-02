@@ -115,6 +115,7 @@ require_once __DIR__ . '/db_config.php';
                         issue_date VARCHAR(255) NOT NULL,
                         pdf_file VARCHAR(255),
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                         PRIMARY KEY (id),
                         UNIQUE KEY uq_payslip_no (payslip_no),
                         INDEX idx_payslip_created_at (created_at),
@@ -122,6 +123,11 @@ require_once __DIR__ . '/db_config.php';
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 ");
                 $success[] = "Table 'payslips' created/verified ✓";
+                $hasUpdatedAt = $pdo->query("SHOW COLUMNS FROM payslips LIKE 'updated_at'")->fetch();
+                if (!$hasUpdatedAt) {
+                    $pdo->exec("ALTER TABLE payslips ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
+                    $success[] = "Added payslips.updated_at timestamp column ✓";
+                }
                 
                 // Check table structure
                 $stmt = $pdo->query("DESCRIBE clients");
