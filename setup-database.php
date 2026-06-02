@@ -103,6 +103,25 @@ require_once __DIR__ . '/db_config.php';
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 ");
                 $success[] = "Table 'clients' created/verified ✓";
+
+                $pdo->exec("
+                    CREATE TABLE IF NOT EXISTS payslips (
+                        id INT(11) NOT NULL AUTO_INCREMENT,
+                        full_name VARCHAR(255) NOT NULL,
+                        service TEXT NOT NULL,
+                        amount_due DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                        amount_paid DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+                        payslip_no VARCHAR(100) NOT NULL,
+                        issue_date VARCHAR(255) NOT NULL,
+                        pdf_file VARCHAR(255),
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        PRIMARY KEY (id),
+                        UNIQUE KEY uq_payslip_no (payslip_no),
+                        INDEX idx_payslip_created_at (created_at),
+                        INDEX idx_full_name (full_name)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
+                $success[] = "Table 'payslips' created/verified ✓";
                 
                 // Check table structure
                 $stmt = $pdo->query("DESCRIBE clients");
@@ -122,6 +141,15 @@ require_once __DIR__ . '/db_config.php';
                     $success[] = "Table contains $count record(s)";
                 } else {
                     $success[] = "Table is empty (ready for new records)";
+                }
+
+                $stmt2 = $pdo->query("SELECT COUNT(*) as count FROM payslips");
+                $result2 = $stmt2->fetch(PDO::FETCH_ASSOC);
+                $count2 = $result2['count'];
+                if ($count2 > 0) {
+                    $success[] = "Payslips table contains $count2 record(s)";
+                } else {
+                    $success[] = "Payslips table is empty (ready for new records)";
                 }
             } catch (PDOException $e) {
                 $errors[] = "Error checking table: " . $e->getMessage();

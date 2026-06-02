@@ -782,6 +782,24 @@ tbody tr:hover td{background:var(--card-h)}
         </div>
       </div>
 
+      <!-- Payslips Section -->
+      <div class="nav-acc" id="acc-payslips">
+        <button class="nav-acc-btn" onclick="toggleAcc('acc-payslips')" aria-expanded="true">
+          Payslips
+          <svg class="chv" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <div class="nav-items">
+          <a href="new-payslip.php" class="ni <?= $current_page==='new-payslip.php'?'active':'' ?>">
+            <svg class="ni-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8zm0 3h8v2H8z"/></svg>
+            New Payslip
+          </a>
+          <a href="payslips.php" class="ni <?= in_array($current_page,['payslips.php','view-payslip.php'])?'active':'' ?>">
+            <svg class="ni-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 8h10v2H7zm0 4h10v2H7zm0 4h6v2H7z"/></svg>
+            All Payslips
+          </a>
+        </div>
+      </div>
+
     </nav>
 
     <div class="sb-foot">
@@ -823,6 +841,12 @@ tbody tr:hover td{background:var(--card-h)}
         <a href="new-receipt.php" class="btn btn-p" id="newReceiptBtn">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           <span>New Receipt</span>
+        </a>
+        <?php endif;?>
+        <?php if($current_page!=='new-payslip.php'):?>
+        <a href="new-payslip.php" class="btn btn-s" id="newPayslipBtn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8zm0 3h8v2H8z"/></svg>
+          <span>New Payslip</span>
         </a>
         <?php endif;?>
       </div>

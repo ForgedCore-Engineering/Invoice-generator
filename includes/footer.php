@@ -11,17 +11,20 @@
   </a>
   <a href="new-receipt.php" class="bn <?= $cp==='new-receipt.php'?'active':'' ?>">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-    <span>New</span>
+    <span>Receipt</span>
+  </a>
+  <a href="new-payslip.php" class="bn <?= $cp==='new-payslip.php'?'active':'' ?>">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 13h8v2H8zm0 3h8v2H8z"/></svg>
+    <span>Payslip</span>
   </a>
   <a href="clients.php" class="bn <?= in_array($cp,['clients.php','view-receipt.php','edit-receipt.php'])?'active':'' ?>">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12zM6 10h2v2H6zm0 4h8v2H6zm10 0h2v2h-2zm-6-4h8v2h-8z"/></svg>
     <span>Receipts</span>
   </a>
-  <button class="bn" onclick="toggleTheme()" aria-label="Toggle theme">
-    <svg id="bnMoon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
-    <svg id="bnSun" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M12 7a5 5 0 1 0 0 10A5 5 0 0 0 12 7zM2 13h2a1 1 0 0 0 0-2H2a1 1 0 0 0 0 2zm18 0h2a1 1 0 0 0 0-2h-2a1 1 0 0 0 0 2zM11 2v2a1 1 0 0 0 2 0V2a1 1 0 0 0-2 0zm0 18v2a1 1 0 0 0 2 0v-2a1 1 0 0 0-2 0zM5.99 4.58a1 1 0 0 0-1.41 1.41l1.06 1.06a1 1 0 0 0 1.41-1.41L5.99 4.58zm12.37 12.37a1 1 0 0 0-1.41 1.41l1.06 1.06a1 1 0 0 0 1.41-1.41l-1.06-1.06zm1.06-10.96a1 1 0 0 0-1.41-1.41l-1.06 1.06a1 1 0 0 0 1.41 1.41l1.06-1.06zM7.05 18.36a1 1 0 0 0-1.41-1.41l-1.06 1.06a1 1 0 0 0 1.41 1.41l1.06-1.06z"/></svg>
-    <span>Theme</span>
-  </button>
+  <a href="payslips.php" class="bn <?= in_array($cp,['payslips.php','view-payslip.php'])?'active':'' ?>">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 8h10v2H7zm0 4h10v2H7zm0 4h6v2H7z"/></svg>
+    <span>Records</span>
+  </a>
 </nav>
 
 <!-- Toast container -->
@@ -87,16 +90,7 @@ function toggleTheme() {
 }
 
 function syncThemeIcons(theme) {
-  const moon = document.getElementById('bnMoon');
-  const sun  = document.getElementById('bnSun');
-  if (!moon || !sun) return;
-  if (theme === 'light') {
-    moon.style.display = 'none';
-    sun.style.display  = 'block';
-  } else {
-    moon.style.display = 'block';
-    sun.style.display  = 'none';
-  }
+  return theme;
 }
 
 // Sync icons on page load

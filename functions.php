@@ -29,6 +29,28 @@ function generateInvoice($name) {
 }
 
 /**
+ * Generate payslip number
+ * Format: PS/{SHORT_NAME}/{COUNT}
+ */
+function generatePayslipNumber($fullName) {
+    $prefix = "PS";
+    $short = strtoupper(substr(trim($fullName), 0, 2));
+    if (empty($short)) {
+        $short = "XX";
+    }
+
+    try {
+        $pdo = getDB();
+        $stmt = $pdo->query("SELECT COUNT(*) FROM payslips");
+        $count = $stmt->fetchColumn() + 1;
+    } catch (Exception $e) {
+        $count = time() % 1000;
+    }
+
+    return sprintf("%s/%s/%03d", $prefix, $short, $count);
+}
+
+/**
  * Get ordinal suffix for day (1st, 2nd, 3rd, 4th, etc.)
  */
 function ordinal($n) {
