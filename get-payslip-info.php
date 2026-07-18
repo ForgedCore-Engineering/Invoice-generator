@@ -35,7 +35,7 @@ try {
 
     echo json_encode([
         'payslip_no' => $payslip_no,
-        'issue_date' => $issue_date,
+        'issue_date' => ."   ". $issue_date,
     ]);
 } catch (Exception $e) {
     http_response_code(500);
