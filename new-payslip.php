@@ -303,7 +303,7 @@ async function generatePDF(d) {
   doc.setFont('times', 'normal');
   doc.text(d.payslip_no, mg + 23, y);
   doc.setFont('times', 'bold');
-  doc.text('Issue Date:\u00A0\u00A0', pw - mg - 26, y);
+  doc.text('Issue Date:', pw - mg - 60, y);
   doc.setFont('times', 'normal');
   doc.text(d.issue_date, pw - mg, y, { align: 'right' });
   y += 14;
