@@ -42,32 +42,32 @@ require_once __DIR__ . '/includes/header.php';
           </div>
         </div>
 
-        <div id="eduBox" style="background:var(--blue-bg);border:1px solid rgba(59,130,246,.25);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div id="eduBox" class="edu-box">
+          <div class="edu-top">
             <div>
-              <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Payment Progress</div>
-              <div id="pv-status-text" style="font-size:13px;font-weight:600;color:var(--txt)">Enter amounts to calculate balance.</div>
+              <div class="edu-lbl">Payment Progress</div>
+              <div id="pv-status-text" class="edu-val">Enter amounts to calculate balance.</div>
             </div>
             <span id="pv-status-badge" class="badge">Pending</span>
           </div>
-          <div style="margin-top:10px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
-            <div style="background:var(--inp);border:1px solid var(--br);border-radius:var(--rs);padding:8px 10px">
-              <div style="font-size:10px;color:var(--txt3);text-transform:uppercase">Due</div>
-              <div id="edu-due" style="font-size:13px;font-weight:700;color:var(--txt)">GH₵ 0.00</div>
+          <div class="pay-grid">
+            <div class="pay-grid-cell">
+              <div class="pay-grid-lbl">Due</div>
+              <div id="edu-due" class="pay-grid-val">GH₵ 0.00</div>
             </div>
-            <div style="background:var(--inp);border:1px solid var(--br);border-radius:var(--rs);padding:8px 10px">
-              <div style="font-size:10px;color:var(--txt3);text-transform:uppercase">Paid</div>
-              <div id="edu-paid" style="font-size:13px;font-weight:700;color:var(--green)">GH₵ 0.00</div>
+            <div class="pay-grid-cell">
+              <div class="pay-grid-lbl">Paid</div>
+              <div id="edu-paid" class="pay-grid-val" style="color:var(--green)">GH₵ 0.00</div>
             </div>
-            <div style="background:var(--inp);border:1px solid var(--br);border-radius:var(--rs);padding:8px 10px">
-              <div style="font-size:10px;color:var(--txt3);text-transform:uppercase">Left To Pay</div>
-              <div id="edu-left" style="font-size:13px;font-weight:700;color:var(--red)">GH₵ 0.00</div>
+            <div class="pay-grid-cell">
+              <div class="pay-grid-lbl">Left To Pay</div>
+              <div id="edu-left" class="pay-grid-val" style="color:var(--red)">GH₵ 0.00</div>
             </div>
           </div>
-          <div id="edu-note" style="font-size:11.5px;color:var(--txt2);margin-top:8px">Tip: this helps you explain payment status to the person immediately.</div>
+          <div id="edu-note" class="edu-note">Tip: this helps you explain payment status to the person immediately.</div>
         </div>
 
-        <div id="errBox" style="display:none;background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);padding:11px 14px;color:var(--red);font-size:13px;margin-bottom:14px"></div>
+        <div id="errBox" class="err-box" style="display:none"></div>
 
         <button type="submit" id="submitBtn" class="btn btn-p btn-lg" style="width:100%;justify-content:center">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
@@ -75,14 +75,14 @@ require_once __DIR__ . '/includes/header.php';
         </button>
       </form>
 
-      <div id="successBox" style="display:none;text-align:center;padding:28px 0">
-        <div style="width:62px;height:62px;background:var(--grn-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--green)">
+      <div id="successBox" class="success-state" style="display:none">
+        <div class="success-ic">
           <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
         </div>
-        <h3 style="font-size:17px;font-weight:700;color:var(--txt);margin-bottom:8px">Payslip Generated!</h3>
-        <p style="color:var(--txt2);font-size:13.5px;margin-bottom:5px">Payslip <strong id="successNo" style="color:var(--acc)"></strong> has been created.</p>
-        <p style="color:var(--txt3);font-size:12.5px;margin-bottom:22px">The PDF is downloaded and the record is saved for future reference.</p>
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <h3 class="success-title">Payslip Generated!</h3>
+        <p class="success-sub">Payslip <strong id="successNo" style="color:var(--acc)"></strong> has been created.</p>
+        <p class="success-sub2">The PDF is downloaded and the record is saved for future reference.</p>
+        <div class="success-acts">
           <button onclick="resetForm()" class="btn btn-p">+ Create Another</button>
           <a href="payslips.php" class="btn btn-s">View All Payslips</a>
         </div>
@@ -90,7 +90,7 @@ require_once __DIR__ . '/includes/header.php';
     </div>
   </div>
 
-  <div style="display:flex;flex-direction:column;gap:14px">
+  <div class="pv-col">
     <div class="card">
       <div class="card-hdr"><div class="card-title">Live Preview</div></div>
       <div class="card-body" style="padding:16px">

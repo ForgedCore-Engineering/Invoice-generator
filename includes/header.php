@@ -659,10 +659,121 @@ tbody tr:hover td{background:var(--card-h)}
 .bn span{line-height:1}
 
 /* ════════════════════════════════════════════
+   ERROR BOX
+════════════════════════════════════════════ */
+.err-box{
+  background:var(--red-bg);border:1px solid rgba(239,68,68,.3);
+  border-radius:var(--rs);padding:11px 14px;
+  color:var(--red);font-size:13px;margin-bottom:14px;
+}
+.err-box a{color:var(--acc);text-decoration:underline}
+
+/* ════════════════════════════════════════════
+   SUCCESS STATE
+════════════════════════════════════════════ */
+.success-state{text-align:center;padding:28px 0}
+.success-ic{
+  width:62px;height:62px;background:var(--grn-bg);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 16px;color:var(--green);
+}
+.success-title{font-size:17px;font-weight:700;color:var(--txt);margin-bottom:8px}
+.success-sub{color:var(--txt2);font-size:13.5px;margin-bottom:5px}
+.success-sub2{color:var(--txt3);font-size:12.5px;margin-bottom:22px}
+.success-acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+/* ════════════════════════════════════════════
+   BUTTON ROW
+════════════════════════════════════════════ */
+.btn-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn-y{
+  background:var(--ylw-bg);color:var(--ylw);
+  border:1px solid rgba(234,179,8,.2);
+}
+.btn-y:hover{background:var(--ylw);color:#fff}
+
+/* ════════════════════════════════════════════
+   PREVIEW COLUMN
+════════════════════════════════════════════ */
+.pv-col{display:flex;flex-direction:column;gap:14px}
+.pv-hdr{text-align:right;border-bottom:1px solid var(--br);padding-bottom:12px;margin-bottom:12px}
+.pv-co-name{font-size:10.5px;font-weight:700;color:var(--txt2);letter-spacing:.5px}
+.pv-co-detail{font-size:10px;color:var(--txt3)}
+
+/* ════════════════════════════════════════════
+   SECTION & DESCRIPTION BOX
+════════════════════════════════════════════ */
+.pv-section{padding:16px 20px;border-bottom:1px solid var(--br)}
+.pv-section:last-child{border-bottom:none}
+.desc-box{
+  background:var(--inp);border-radius:var(--rs);
+  padding:13px 16px;font-size:14px;color:var(--txt);
+  line-height:1.65;font-weight:500;
+}
+
+/* ════════════════════════════════════════════
+   PAYMENT BREAKDOWN TABLE
+════════════════════════════════════════════ */
+.pay-table{background:var(--inp);border-radius:var(--rs);overflow:hidden}
+.pay-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:13px 14px;border-top:1px solid var(--br);
+}
+.pay-row-hdr{
+  display:flex;justify-content:space-between;
+  padding:10px 14px;background:rgba(255,255,255,.04);
+  font-size:11px;font-weight:600;color:var(--txt2);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.pay-row-total{border-top:2px solid var(--br2);background:rgba(255,255,255,.02)}
+.pay-row-lbl{font-size:13.5px;color:var(--txt2)}
+.pay-row-val{font-size:16px;font-weight:700;color:var(--txt)}
+.pay-row-total .pay-row-lbl{font-size:14px;font-weight:600;color:var(--txt)}
+.pay-row-total .pay-row-val{font-size:18px;font-weight:800}
+
+/* ════════════════════════════════════════════
+   PAYMENT PROGRESS GRID (new-payslip edu box)
+════════════════════════════════════════════ */
+.edu-box{
+  background:var(--blue-bg);border:1px solid rgba(59,130,246,.25);
+  border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;
+}
+.edu-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.edu-lbl{font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.edu-val{font-size:13px;font-weight:600;color:var(--txt)}
+.edu-note{font-size:11.5px;color:var(--txt2);margin-top:8px}
+.pay-grid{
+  margin-top:10px;display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;
+}
+.pay-grid-cell{
+  background:var(--inp);border:1px solid var(--br);
+  border-radius:var(--rs);padding:8px 10px;
+}
+.pay-grid-lbl{font-size:10px;color:var(--txt3);text-transform:uppercase}
+.pay-grid-val{font-size:13px;font-weight:700;color:var(--txt)}
+
+/* ════════════════════════════════════════════
+   STAT GRIDS (4-column variant)
+════════════════════════════════════════════ */
+.sg-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+
+/* ════════════════════════════════════════════
+   INLINE STYLE REPLACEMENTS
+════════════════════════════════════════════ */
+.mono{font-family:monospace;font-size:12px;color:var(--txt2)}
+.date-cell{color:var(--txt3);font-size:12px;white-space:nowrap}
+.acts-end{justify-content:flex-end}
+.status-note{
+  margin-top:10px;padding:9px 11px;border-radius:var(--rs);font-size:12px;
+}
+
+/* ════════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════════ */
 @media(max-width:1280px){
   .sg{grid-template-columns:repeat(2,1fr)}
+  .sg-4{grid-template-columns:repeat(2,1fr)}
   .g2{grid-template-columns:1fr 290px}
   .g2-form{grid-template-columns:1fr 300px}
 }
@@ -685,6 +796,7 @@ tbody tr:hover td{background:var(--card-h)}
   }
   .sg{grid-template-columns:repeat(2,1fr);gap:10px}
   .sg-3{grid-template-columns:1fr}
+  .sg-4{grid-template-columns:repeat(2,1fr);gap:10px}
   .fbar{gap:8px}
   .fbar .f-input,.fbar .f-sel,.fbar .btn{width:100%;justify-content:center}
   .sbox{flex:1 1 100%;min-width:unset}
@@ -696,22 +808,30 @@ tbody tr:hover td{background:var(--card-h)}
   .toast{max-width:calc(100vw - 32px);min-width:0}
   .tw-c{left:16px;right:16px}
   table{min-width:0}
+  .pay-row{padding:11px 12px}
+  .pay-row-val{font-size:14px}
+  .pay-row-total .pay-row-val{font-size:16px}
+  .pv-section{padding:14px 16px}
 }
 @media(max-width:640px){
   .bottom-nav{display:flex}
   .main{margin-bottom:var(--bnh)}
   .tw-c{bottom:calc(var(--bnh) + 10px)}
   .sg{grid-template-columns:repeat(2,1fr)}
+  .sg-4{grid-template-columns:repeat(2,1fr)}
   .hdr-acts .btn-p span{display:none}
+  .hdr-acts .btn-s span{display:none}
   .ph h1{font-size:14px}
   .ph p{display:none}
   .mstat-val{font-size:17px}
   .rcard-meta{grid-template-columns:1fr}
   .rcard-foot .btn{flex:1 1 calc(50% - 3px)}
   .rcard-foot .btn:first-child{flex:1 1 100%}
+  .pay-grid{grid-template-columns:1fr}
 }
 @media(max-width:420px){
   .sg{grid-template-columns:1fr}
+  .sg-4{grid-template-columns:1fr}
   .fbar{flex-direction:column;align-items:stretch}
   .sbox{min-width:unset}
   .sc-val{font-size:18px}
@@ -721,6 +841,12 @@ tbody tr:hover td{background:var(--card-h)}
   .modal{padding:18px}
   .m-acts{justify-content:stretch}
   .m-acts .btn{flex:1;justify-content:center}
+  .btn-row{flex-direction:column}
+  .btn-row .btn{justify-content:center}
+  .pay-row-lbl{font-size:12px}
+  .pay-row-val{font-size:13px}
+  .pay-row-total .pay-row-val{font-size:15px}
+  .pv-section{padding:12px 14px}
 }
 </style>
 </head>

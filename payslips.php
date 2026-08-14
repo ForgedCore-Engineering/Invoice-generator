@@ -51,7 +51,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <?php if ($db_err): ?>
-<div style="background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);padding:13px 16px;margin-bottom:16px;color:var(--red);font-size:13px">
+<div class="err-box" style="margin-bottom:16px">
   ⚠ Database error: <?= htmlspecialchars($db_err) ?>
 </div>
 <?php endif; ?>
@@ -69,7 +69,7 @@ require_once __DIR__ . '/includes/header.php';
   <?php endif; ?>
 </form>
 
-<div class="sg-3">
+<div class="sg-4">
   <div class="mstat">
     <div class="mstat-lbl">Total Payslips</div>
     <div class="mstat-val"><?= number_format($total_records) ?></div>
@@ -97,7 +97,7 @@ require_once __DIR__ . '/includes/header.php';
     <a href="new-payslip.php" class="btn btn-p">Create Payslip</a>
   </div>
   <?php else: ?>
-  <div class="tw">
+  <div class="tw tw-desktop">
     <table>
       <thead>
         <tr>
@@ -123,7 +123,7 @@ require_once __DIR__ . '/includes/header.php';
         <tr>
           <td><?= (int)$r['id'] ?></td>
           <td><?= htmlspecialchars($r['full_name']) ?></td>
-          <td style="font-family:monospace"><?= htmlspecialchars($r['payslip_no']) ?></td>
+          <td class="mono"><?= htmlspecialchars($r['payslip_no']) ?></td>
           <td><?= htmlspecialchars($r['service']) ?></td>
           <td class="am-cell">GH₵ <?= number_format((float)$r['amount_due'], 2) ?></td>
           <td class="am-cell">GH₵ <?= number_format((float)$r['amount_paid'], 2) ?></td>
@@ -131,7 +131,7 @@ require_once __DIR__ . '/includes/header.php';
           <td><span class="badge <?= $st ?>"><span class="bdot"></span><?= $sl ?></span></td>
           <td><?= htmlspecialchars($r['issue_date']) ?></td>
           <td>
-            <div class="acts" style="justify-content:flex-end">
+            <div class="acts acts-end">
               <a class="btn btn-b btn-sm" href="view-payslip.php?id=<?= (int)$r['id'] ?>">View</a>
               <a class="btn btn-s btn-sm" href="edit-payslip.php?id=<?= (int)$r['id'] ?>">Edit</a>
               <button class="btn btn-d btn-sm" type="button" onclick="confirmDel(<?= (int)$r['id'] ?>, '<?= htmlspecialchars(addslashes($r['full_name'])) ?>')">Delete</button>
@@ -141,6 +141,38 @@ require_once __DIR__ . '/includes/header.php';
       <?php endforeach; ?>
       </tbody>
     </table>
+  </div>
+  <div class="mob-list">
+    <?php foreach ($rows as $r):
+      $left = max(0, (float)$r['amount_due'] - (float)$r['amount_paid']);
+      if ($left <= 0) { $st = 'bg-paid'; $sl = 'Fully Paid'; }
+      elseif ((float)$r['amount_paid'] > 0) { $st = 'bg-partial'; $sl = 'Partially Paid'; }
+      else { $st = 'bg-unpaid'; $sl = 'Unpaid'; }
+    ?>
+    <article class="rcard">
+      <div class="rcard-top">
+        <div class="cc">
+          <div class="av"><?= strtoupper(substr(trim($r['full_name']),0,2)) ?></div>
+          <div>
+            <div class="cn"><?= htmlspecialchars($r['full_name']) ?></div>
+            <div class="csub mono"><?= htmlspecialchars($r['payslip_no']) ?></div>
+          </div>
+        </div>
+        <span class="badge <?= $st ?>"><span class="bdot"></span><?= $sl ?></span>
+      </div>
+      <div class="rcard-meta">
+        <div><span>Service</span><strong><?= htmlspecialchars(mb_strimwidth($r['service'], 0, 40, '...')) ?></strong></div>
+        <div><span>Date</span><strong><?= htmlspecialchars($r['issue_date']) ?></strong></div>
+        <div><span>Due</span><strong class="am-cell">GH₵ <?= number_format((float)$r['amount_due'], 2) ?></strong></div>
+        <div><span>Left</span><strong class="am-cell <?= $left > 0 ? 'am-full' : 'am-zero' ?>">GH₵ <?= number_format($left, 2) ?></strong></div>
+      </div>
+      <div class="rcard-foot">
+        <a class="btn btn-b btn-sm" href="view-payslip.php?id=<?= (int)$r['id'] ?>">View</a>
+        <a class="btn btn-s btn-sm" href="edit-payslip.php?id=<?= (int)$r['id'] ?>">Edit</a>
+        <button class="btn btn-d btn-sm" type="button" onclick="confirmDel(<?= (int)$r['id'] ?>, '<?= htmlspecialchars(addslashes($r['full_name'])) ?>')">Delete</button>
+      </div>
+    </article>
+    <?php endforeach; ?>
   </div>
   <?php if ($total_pages > 1): ?>
   <div class="pag">

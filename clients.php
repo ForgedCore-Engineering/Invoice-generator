@@ -160,7 +160,7 @@ require_once __DIR__ . '/includes/header.php';
     <table>
       <thead>
         <tr>
-          <th style="width:40px">#</th>
+          <th>#</th>
           <th>Client</th>
           <th>Invoice No</th>
           <th>Total (GHS)</th>
@@ -191,16 +191,16 @@ require_once __DIR__ . '/includes/header.php';
               </div>
             </div>
           </td>
-          <td style="font-family:monospace;font-size:12px;color:var(--txt2)"><?= htmlspecialchars($r['invoice_no']) ?></td>
+          <td class="mono"><?= htmlspecialchars($r['invoice_no']) ?></td>
           <td class="am-cell">GH₵&nbsp;<?= number_format($r['total'],2) ?></td>
           <td class="am-cell am-zero">GH₵&nbsp;<?= number_format($r['paid'],2) ?></td>
           <td class="am-cell <?= $bal<=0?'am-zero':($paid>0?'am-part':'am-full') ?>">
             GH₵&nbsp;<?= number_format(max(0,$bal),2) ?>
           </td>
           <td><span class="badge bg-<?= $st ?>"><span class="bdot"></span><?= $sl ?></span></td>
-          <td style="color:var(--txt3);font-size:12px;white-space:nowrap"><?= htmlspecialchars($r['date']) ?></td>
+          <td class="date-cell"><?= htmlspecialchars($r['date']) ?></td>
           <td>
-            <div class="acts" style="justify-content:flex-end">
+            <div class="acts acts-end">
               <a href="view-receipt.php?id=<?= $r['id'] ?>" class="btn btn-b btn-sm" title="View Details">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
               </a>

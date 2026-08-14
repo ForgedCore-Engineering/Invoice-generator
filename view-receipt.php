@@ -56,7 +56,7 @@ if ($error): ?>
 <div class="g2">
 
   <!-- ── Main Receipt Card ── -->
-  <div style="display:flex;flex-direction:column;gap:16px">
+  <div class="pv-col">
 
     <!-- Header -->
     <div class="card">
@@ -74,7 +74,7 @@ if ($error): ?>
       </div>
 
       <!-- Info row -->
-      <div style="padding:16px 20px;border-bottom:1px solid var(--br)">
+      <div class="pv-section">
         <div class="info-row">
           <div class="inf-item">
             <div class="inf-lbl">Invoice No</div>
@@ -92,33 +92,33 @@ if ($error): ?>
       </div>
 
       <!-- Description -->
-      <div style="padding:16px 20px;border-bottom:1px solid var(--br)">
+      <div class="pv-section">
         <div class="inf-lbl" style="margin-bottom:8px">Service / Description</div>
-        <div style="background:var(--inp);border-radius:var(--rs);padding:13px 16px;font-size:14px;color:var(--txt);line-height:1.65;font-weight:500">
+        <div class="desc-box">
           <?= htmlspecialchars($receipt['description']) ?>
         </div>
       </div>
 
       <!-- Payment Breakdown -->
-      <div style="padding:16px 20px">
+      <div class="pv-section">
         <div class="inf-lbl" style="margin-bottom:12px">Payment Breakdown</div>
 
-        <div style="background:var(--inp);border-radius:var(--rs);overflow:hidden">
-          <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.04);font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px">
+        <div class="pay-table">
+          <div class="pay-row-hdr">
             <span>Description</span><span>Amount (GHS)</span>
           </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-top:1px solid var(--br)">
-            <span style="font-size:13.5px;color:var(--txt2)">Total Invoice Amount</span>
-            <span style="font-size:16px;font-weight:700;color:var(--txt)">GH₵ <?= number_format($receipt['total'],2) ?></span>
+          <div class="pay-row">
+            <span class="pay-row-lbl">Total Invoice Amount</span>
+            <span class="pay-row-val">GH₵ <?= number_format($receipt['total'],2) ?></span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-top:1px solid var(--br)">
-            <span style="font-size:13.5px;color:var(--txt2)">Amount Paid</span>
-            <span style="font-size:16px;font-weight:700;color:var(--green)">GH₵ <?= number_format($receipt['paid'],2) ?></span>
+          <div class="pay-row">
+            <span class="pay-row-lbl">Amount Paid</span>
+            <span class="pay-row-val" style="color:var(--green)">GH₵ <?= number_format($receipt['paid'],2) ?></span>
           </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-top:2px solid var(--br2);background:rgba(255,255,255,.02)">
-            <span style="font-size:14px;font-weight:600;color:var(--txt)">Outstanding Balance</span>
-            <span style="font-size:18px;font-weight:800;color:<?= $bal<=0?'var(--green)':'var(--red)' ?>">
+          <div class="pay-row pay-row-total">
+            <span class="pay-row-lbl">Outstanding Balance</span>
+            <span class="pay-row-val" style="color:<?= $bal<=0?'var(--green)':'var(--red)' ?>">
               GH₵ <?= number_format(max(0,$bal),2) ?>
             </span>
           </div>
@@ -129,7 +129,7 @@ if ($error): ?>
   </div><!-- /left column -->
 
   <!-- ── Right Column ── -->
-  <div style="display:flex;flex-direction:column;gap:16px">
+  <div class="pv-col">
 
     <!-- Actions -->
     <div class="card">

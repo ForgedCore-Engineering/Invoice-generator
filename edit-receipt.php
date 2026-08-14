@@ -95,9 +95,9 @@ require_once __DIR__ . '/includes/header.php';
 
         </div>
 
-        <div id="errBox" style="display:none;background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);padding:11px 14px;color:var(--red);font-size:13px;margin-bottom:14px"></div>
+        <div id="errBox" class="err-box" style="display:none"></div>
 
-        <div style="display:flex;gap:12px">
+        <div class="btn-row">
             <button type="submit" id="submitBtn" class="btn btn-p btn-lg" style="flex:1;justify-content:center">
               <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 7L9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59 21 7z"/></svg>
               Save Changes
@@ -110,11 +110,11 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 
   <!-- ── Live Preview ── -->
-  <div style="display:flex;flex-direction:column;gap:14px">
+  <div class="pv-col">
     <div class="card">
       <div class="card-hdr"><div class="card-title">Live Preview Update</div></div>
       <div class="card-body" style="padding:16px">
-        <div style="text-align:right;border-bottom:1px solid var(--br);padding-bottom:12px;margin-bottom:12px">
+        <div class="pv-hdr">
           <div style="font-size:10.5px;font-weight:700;color:var(--txt2);letter-spacing:.5px">FORGEDCORE ENGINEERING LTD</div>
         </div>
         <div id="pv-name" style="font-size:13.5px;font-weight:600;color:var(--txt);margin-bottom:2px">—</div>

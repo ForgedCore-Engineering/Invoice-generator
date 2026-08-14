@@ -73,7 +73,7 @@ require_once __DIR__ . '/includes/header.php';
 ?>
 
 <?php if ($db_err): ?>
-<div style="background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);padding:13px 16px;margin-bottom:18px;color:var(--red);font-size:13px">
+<div class="err-box" style="margin-bottom:18px">
   ⚠ Database error: <?= htmlspecialchars($db_err) ?> —
   <a href="setup-database.php" style="color:var(--acc);text-decoration:underline">Run database setup</a>
 </div>
@@ -165,10 +165,10 @@ require_once __DIR__ . '/includes/header.php';
                 </div>
               </div>
             </td>
-            <td style="font-family:monospace;font-size:12px;color:var(--txt2)"><?= htmlspecialchars($r['invoice_no']) ?></td>
+            <td class="mono"><?= htmlspecialchars($r['invoice_no']) ?></td>
             <td class="am-cell">GH₵ <?= number_format($r['total'],2) ?></td>
             <td><span class="badge bg-<?= $st ?>"><span class="bdot"></span><?= $sl ?></span></td>
-            <td style="color:var(--txt3);font-size:12px;white-space:nowrap"><?= htmlspecialchars($r['date']) ?></td>
+            <td class="date-cell"><?= htmlspecialchars($r['date']) ?></td>
           </tr>
           <?php endforeach; ?>
         </tbody>
@@ -208,7 +208,7 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 
   <!-- Right Column -->
-  <div style="display:flex;flex-direction:column;gap:16px">
+  <div class="pv-col" style="gap:16px">
 
     <!-- Quick Actions -->
     <div class="card">
@@ -226,7 +226,7 @@ require_once __DIR__ . '/includes/header.php';
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
           View Unpaid Receipts
         </a>
-        <a href="clients.php?status=partial" class="btn" style="justify-content:center;background:var(--ylw-bg);color:var(--ylw);border:1px solid rgba(234,179,8,.2)">
+        <a href="clients.php?status=partial" class="btn btn-y" style="justify-content:center">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg>
           Partial Payments
         </a>

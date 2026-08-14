@@ -48,7 +48,7 @@ require_once __DIR__ . '/includes/header.php';
       <span class="badge <?= $payStatusClass ?>"><span class="bdot"></span><?= htmlspecialchars($payStatus) ?></span>
     </div>
 
-    <div style="padding:16px 20px;border-bottom:1px solid var(--br)">
+    <div class="pv-section">
       <div class="info-row">
         <div class="inf-item">
           <div class="inf-lbl">Payslip No</div>
@@ -69,33 +69,33 @@ require_once __DIR__ . '/includes/header.php';
       </div>
     </div>
 
-    <div style="padding:16px 20px;border-bottom:1px solid var(--br)">
+    <div class="pv-section">
       <div class="inf-lbl" style="margin-bottom:8px">Services</div>
-      <div style="background:var(--inp);border-radius:var(--rs);padding:13px 16px;font-size:14px;color:var(--txt);line-height:1.65;font-weight:500">
+      <div class="desc-box">
         <?= htmlspecialchars($payslip['service']) ?>
       </div>
     </div>
 
-    <div style="padding:16px 20px">
+    <div class="pv-section">
       <div class="inf-lbl" style="margin-bottom:12px">Payment Summary</div>
-      <div style="background:var(--inp);border-radius:var(--rs);overflow:hidden">
-        <div style="display:flex;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.04);font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.5px">
+      <div class="pay-table">
+        <div class="pay-row-hdr">
           <span>Description</span><span>Amount (GHS)</span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-top:1px solid var(--br)">
-          <span style="font-size:13.5px;color:var(--txt2)">Amount Supposed To Be Paid</span>
-          <span style="font-size:16px;font-weight:700;color:var(--txt)">GH₵ <?= number_format((float)$payslip['amount_due'], 2) ?></span>
+        <div class="pay-row">
+          <span class="pay-row-lbl">Amount Supposed To Be Paid</span>
+          <span class="pay-row-val">GH₵ <?= number_format((float)$payslip['amount_due'], 2) ?></span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-top:1px solid var(--br)">
-          <span style="font-size:13.5px;color:var(--txt2)">Amount Paid</span>
-          <span style="font-size:16px;font-weight:700;color:var(--green)">GH₵ <?= number_format((float)$payslip['amount_paid'], 2) ?></span>
+        <div class="pay-row">
+          <span class="pay-row-lbl">Amount Paid</span>
+          <span class="pay-row-val" style="color:var(--green)">GH₵ <?= number_format((float)$payslip['amount_paid'], 2) ?></span>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-top:1px solid var(--br)">
-          <span style="font-size:13.5px;color:var(--txt2)">Left To Pay</span>
-          <span style="font-size:16px;font-weight:700;color:<?= $leftToPay > 0 ? 'var(--red)' : 'var(--green)' ?>">GH₵ <?= number_format($leftToPay, 2) ?></span>
+        <div class="pay-row">
+          <span class="pay-row-lbl">Left To Pay</span>
+          <span class="pay-row-val" style="color:<?= $leftToPay > 0 ? 'var(--red)' : 'var(--green)' ?>">GH₵ <?= number_format($leftToPay, 2) ?></span>
         </div>
       </div>
-      <div style="margin-top:10px;padding:9px 11px;border-radius:var(--rs);background:<?= $leftToPay > 0 ? 'var(--ylw-bg)' : 'var(--grn-bg)' ?>;color:<?= $leftToPay > 0 ? 'var(--ylw)' : 'var(--green)' ?>;font-size:12px">
+      <div class="status-note" style="background:<?= $leftToPay > 0 ? 'var(--ylw-bg)' : 'var(--grn-bg)' ?>;color:<?= $leftToPay > 0 ? 'var(--ylw)' : 'var(--green)' ?>">
         <?= $leftToPay > 0 ? 'There is still an outstanding amount to be paid.' : 'Payment is complete. No outstanding amount.' ?>
       </div>
     </div>

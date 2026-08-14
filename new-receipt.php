@@ -63,7 +63,7 @@ require_once __DIR__ . '/includes/header.php';
         </div>
 
         <!-- Error box -->
-        <div id="errBox" style="display:none;background:var(--red-bg);border:1px solid rgba(239,68,68,.3);border-radius:var(--rs);padding:11px 14px;color:var(--red);font-size:13px;margin-bottom:14px"></div>
+        <div id="errBox" class="err-box" style="display:none"></div>
 
         <button type="submit" id="submitBtn" class="btn btn-p btn-lg" style="width:100%;justify-content:center">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
@@ -72,14 +72,14 @@ require_once __DIR__ . '/includes/header.php';
       </form>
 
       <!-- Success state (hidden initially) -->
-      <div id="successBox" style="display:none;text-align:center;padding:28px 0">
-        <div style="width:62px;height:62px;background:var(--grn-bg);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;color:var(--green)">
+      <div id="successBox" class="success-state" style="display:none">
+        <div class="success-ic">
           <svg viewBox="0 0 24 24" fill="currentColor" width="32" height="32"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
         </div>
-        <h3 style="font-size:17px;font-weight:700;color:var(--txt);margin-bottom:8px">Receipt Generated!</h3>
-        <p style="color:var(--txt2);font-size:13.5px;margin-bottom:5px">Invoice <strong id="successInv" style="color:var(--acc)"></strong> has been created.</p>
-        <p style="color:var(--txt3);font-size:12.5px;margin-bottom:22px">The PDF was downloaded to your computer and saved to the system.</p>
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <h3 class="success-title">Receipt Generated!</h3>
+        <p class="success-sub">Invoice <strong id="successInv" style="color:var(--acc)"></strong> has been created.</p>
+        <p class="success-sub2">The PDF was downloaded to your computer and saved to the system.</p>
+        <div class="success-acts">
           <button onclick="resetForm()" class="btn btn-p">+ Create Another</button>
           <a href="clients.php" class="btn btn-s">View All Receipts</a>
         </div>
@@ -89,16 +89,16 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 
   <!-- ── Live Preview ── -->
-  <div style="display:flex;flex-direction:column;gap:14px">
+  <div class="pv-col">
     <div class="card">
       <div class="card-hdr"><div class="card-title">Live Preview</div></div>
       <div class="card-body" style="padding:16px">
 
         <!-- Company header mini -->
-        <div style="text-align:right;border-bottom:1px solid var(--br);padding-bottom:12px;margin-bottom:12px">
-          <div style="font-size:10.5px;font-weight:700;color:var(--txt2);letter-spacing:.5px">FORGEDCORE ENGINEERING LTD</div>
-          <div style="font-size:10px;color:var(--txt3)">Kpobiman (Amasaman), Accra</div>
-          <div style="font-size:10px;color:var(--txt3)">0540202096 / 0545286665</div>
+        <div class="pv-hdr">
+          <div class="pv-co-name">FORGEDCORE ENGINEERING LTD</div>
+          <div class="pv-co-detail">Kpobiman (Amasaman), Accra</div>
+          <div class="pv-co-detail">0540202096 / 0545286665</div>
         </div>
 
         <div style="text-align:center;font-size:12.5px;font-weight:700;color:var(--acc);letter-spacing:2px;margin-bottom:14px">RECEIPT</div>
@@ -111,7 +111,7 @@ require_once __DIR__ . '/includes/header.php';
         <div id="pv-desc" style="font-size:11.5px;font-weight:700;color:var(--txt);text-align:center;letter-spacing:.5px;margin-bottom:12px;text-transform:uppercase">—</div>
 
         <!-- Payment preview table -->
-        <div style="background:var(--inp);border-radius:var(--rs);overflow:hidden;font-size:12px">
+        <div class="pay-table" style="font-size:12px">
           <div style="display:flex;justify-content:space-between;padding:8px 10px;background:rgba(255,255,255,.04);font-weight:600;color:var(--txt2)">
             <span>DESCRIPTION</span><span>AMOUNT</span>
           </div>
