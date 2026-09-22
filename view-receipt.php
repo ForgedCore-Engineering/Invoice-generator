@@ -206,6 +206,7 @@ if ($error): ?>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="assets/letterhead-pdf.js"></script>
 <script>
 const { jsPDF } = window.jspdf;
 const RD = <?= json_encode([
@@ -255,85 +256,132 @@ async function doDelete() {
   }
 }
 
-/* ── PDF Generator ── */
+/* ── PDF Generator (Letterhead) ── */
 async function generatePDF(d) {
-  const doc = new jsPDF();
-  const pw = doc.internal.pageSize.getWidth();
-  const mg = 30, cw = pw - mg * 2;
-  let y = mg;
+  // Create A4 doc with ForgedCore letterhead background
+  const { doc, pw, ph, mg, safeTop, safeBottom } = await createLetterheadDoc();
+  const cw = pw - mg * 2;
+  let y = safeTop;
 
   doc.setFont('times');
 
-  let logoLoaded = false;
-  try { const li = await loadImg('receipts/static/logo.png'); doc.addImage(li,'PNG',mg,y,30,30); logoLoaded=true; } catch(e){}
+  // ── Document Title ──
+  doc.setFontSize(20); doc.setFont('times', 'bold');
+  doc.setTextColor(13, 46, 70);
+  doc.text('RECEIPT', pw / 2, y, { align: 'center' });
+  y += 7;
 
-  doc.setFontSize(11); doc.setFont('times','bold');
-  doc.text('FORGEDCORE ENGINEERING LTD', pw-mg, y+10, {align:'right'});
-  doc.setFontSize(9); doc.setFont('times','normal');
-  doc.text('Kpobiman (Amasaman), Accra', pw-mg, y+17, {align:'right'});
-  doc.text('0540202096 / 0545286665 | forgedcoreengineering@gmail.com', pw-mg, y+23, {align:'right'});
-  doc.text('www.forgedcoreengineering.com', pw-mg, y+29, {align:'right'});
-  y += logoLoaded ? 42 : 22;
+  // Teal underline accent
+  doc.setDrawColor(0, 128, 115);
+  doc.setLineWidth(0.6);
+  doc.line(pw / 2 - 18, y, pw / 2 + 18, y);
+  doc.setLineWidth(0.2);
+  y += 10;
 
-  doc.setFontSize(18); doc.setFont('times','bold');
-  doc.text('RECEIPT', pw/2, y, {align:'center'}); y += 15;
+  // ── Invoice Meta (two-column) ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('INVOICE NO', mg, y);
+  doc.text('DATE ISSUED', pw / 2 + 2, y);
+  y += 5;
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(13, 46, 70);
+  doc.text(d.invoice_no, mg, y);
+  doc.text(d.date, pw / 2 + 2, y);
+  y += 10;
 
-  doc.setFontSize(10);
-  doc.setFont('times','bold'); doc.text('Invoice No:', mg, y);
-  doc.setFont('times','normal'); doc.text(d.invoice_no, mg+35, y);
-  doc.setFont('times','bold'); doc.text('Date:', mg, y+7);
-  doc.setFont('times','normal'); doc.text(d.date, mg+35, y+7);
-  doc.setFont('times','bold'); doc.text('BILL TO', pw-mg, y, {align:'right'});
-  doc.setFont('times','normal');
-  doc.text('Client: '+d.name,    pw-mg, y+7,  {align:'right'});
-  doc.text('Address: '+d.address, pw-mg, y+14, {align:'right'});
-  doc.text('Contact: '+d.contact, pw-mg, y+21, {align:'right'});
-  y += 35;
+  // ── Bill To ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('BILL TO', mg, y); y += 5;
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(20, 20, 20);
+  doc.text(d.name, mg, y); y += 6;
+  doc.setFontSize(9.5); doc.setTextColor(80, 80, 80);
+  doc.text(d.address + '   |   ' + d.contact, mg, y); y += 12;
 
-  doc.setFontSize(12); doc.setFont('times','bold');
-  doc.text(d.description.toUpperCase(), pw/2, y, {align:'center'}); y += 15;
+  // Separator line
+  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
+  doc.line(mg, y, pw - mg, y); y += 9;
 
-  doc.setFontSize(11); doc.setFont('times','bold');
-  doc.text('PAYMENT SUMMARY', pw/2, y, {align:'center'}); y += 12;
+  // ── Description ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('SERVICE / DESCRIPTION', mg, y); y += 5;
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(20, 20, 20);
+  const descLines = doc.splitTextToSize(d.description, cw);
+  doc.text(descLines, mg, y);
+  y += descLines.length * 6 + 10;
 
-  const tTop=y, rh=10;
-  doc.setFillColor(245,245,245); doc.rect(mg,tTop,cw,rh,'F');
-  doc.setFont('times','bold');
-  doc.text('DESCRIPTION', mg+5, tTop+7);
-  doc.text('AMOUNT (GHS)', pw-mg-5, tTop+7, {align:'right'});
+  // Separator line
+  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
+  doc.line(mg, y, pw - mg, y); y += 9;
+
+  // ── Payment Summary Table ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('PAYMENT SUMMARY', mg, y); y += 7;
+
+  const rh = 10, tTop = y;
+  // Table header row
+  doc.setFillColor(13, 46, 70);
+  doc.roundedRect(mg, tTop, cw, rh, 1.5, 1.5, 'F');
+  doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(255, 255, 255);
+  doc.text('DESCRIPTION', mg + 4, tTop + 6.5);
+  doc.text('AMOUNT (GHS)', pw - mg - 4, tTop + 6.5, { align: 'right' });
 
   const bal = d.total - d.paid;
   [
-    {desc:'TOTAL SUM',           amt:d.total.toFixed(2), color:null},
-    {desc:'TOTAL AMOUNT PAID',   amt:d.paid.toFixed(2),  color:[0,128,0]},
-    {desc:'OUTSTANDING BALANCE', amt:bal.toFixed(2),     color:bal>0?[220,0,0]:[0,128,0]},
-  ].forEach((row,i)=>{
-    const rY=tTop+rh+i*rh;
-    if(i%2===0){doc.setFillColor(247,247,247);doc.rect(mg,rY,cw,rh,'F');}
-    doc.setFont('times','normal'); doc.setTextColor(0,0,0);
-    doc.text(row.desc, mg+5, rY+7);
-    if(row.color){doc.setTextColor(...row.color); doc.setFont('times','bold');}
-    doc.text(row.amt, pw-mg-5, rY+7, {align:'right'});
-    doc.setTextColor(0,0,0);
+    { desc: 'Total Invoice Amount', amt: d.total.toFixed(2), color: null },
+    { desc: 'Amount Paid',          amt: d.paid.toFixed(2),  color: [0, 128, 64] },
+    { desc: 'Outstanding Balance',  amt: Math.max(0, bal).toFixed(2), color: bal > 0 ? [200, 30, 30] : [0, 128, 64] },
+  ].forEach((row, i) => {
+    const rY = tTop + rh + i * rh;
+    doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 250 : 255, i % 2 === 0 ? 252 : 255);
+    doc.rect(mg, rY, cw, rh, 'F');
+    doc.setFont('times', 'normal'); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
+    doc.text(row.desc, mg + 4, rY + 6.5);
+    if (row.color) { doc.setTextColor(...row.color); doc.setFont('times', 'bold'); }
+    doc.text(row.amt, pw - mg - 4, rY + 6.5, { align: 'right' });
+    doc.setTextColor(30, 30, 30);
   });
-  y = tTop + rh*4 + 30;
+  // Table border
+  doc.setDrawColor(210, 215, 220); doc.setLineWidth(0.3);
+  doc.roundedRect(mg, tTop, cw, rh * 4, 1.5, 1.5, 'S');
+  y = tTop + rh * 4 + 8;
 
-  const sigX = mg + cw*0.64;
-  doc.setFont('times','bold'); doc.text('Authorized Signature:', sigX, y); y+=15;
-  try { const si=await loadImg('receipts/static/signature.png'); doc.addImage(si,'PNG',sigX,y,60,20); y+=25; } catch(e){y+=10;}
-  doc.setFont('times','normal'); doc.text('Eyram Dela Kuwornu', sigX, y);
-  doc.setFontSize(9); doc.text('(Director – Forgedcore Engineering Ltd)', sigX, y+7);
+  // ── Status Badge ──
+  const status = bal <= 0 ? 'FULLY PAID' : (d.paid > 0 ? 'PARTIALLY PAID' : 'UNPAID');
+  const [br, bg, bb] = bal <= 0 ? [220, 252, 231] : (d.paid > 0 ? [254, 243, 199] : [254, 226, 226]);
+  const [tr, tg, tb] = bal <= 0 ? [21, 128, 61]  : (d.paid > 0 ? [146, 64, 14]  : [153, 27, 27]);
+  doc.setFillColor(br, bg, bb);
+  doc.roundedRect(mg, y, 58, 9, 2, 2, 'F');
+  doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(tr, tg, tb);
+  doc.text('STATUS: ' + status, mg + 4, y + 6);
+  doc.setTextColor(0, 0, 0);
+  y += 16;
 
-  doc.save('receipt_' + d.invoice_no.replace(/\//g,'_') + '.pdf');
+  // ── Signature ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(60, 60, 60);
+  doc.text('Authorized Signature:', pw - mg - 68, y); y += 4;
+  doc.setDrawColor(180, 180, 180); doc.setLineWidth(0.2);
+  try {
+    const si = await loadImg('receipts/static/signature.png');
+    doc.addImage(si, 'PNG', pw - mg - 68, y, 55, 18); y += 22;
+  } catch(e) { y += 14; }
+  doc.setFont('times', 'normal'); doc.setFontSize(10); doc.setTextColor(20, 20, 20);
+  doc.text('Eyram Dela Kuwornu', pw - mg - 68, y);
+  doc.setFontSize(8.5); doc.setTextColor(100, 100, 100);
+  doc.text('Director — Forgedcore Engineering Ltd', pw - mg - 68, y + 5);
+
+  // ── Footer Note ──
+  doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(140, 140, 140);
+  doc.text('This document is computer generated and valid without stamp.', pw / 2, safeBottom + 4, { align: 'center' });
+
+  doc.save('receipt_' + d.invoice_no.replace(/\//g, '_') + '.pdf');
 }
 
 function loadImg(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin='anonymous';
-    img.onload=()=>resolve(img);
-    img.onerror=()=>reject(new Error('Not found'));
-    img.src=url;
+    img.crossOrigin = 'anonymous';
+    img.onload  = () => resolve(img);
+    img.onerror = () => reject(new Error('Not found'));
+    img.src = url;
   });
 }
 </script>

@@ -138,6 +138,7 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="assets/letterhead-pdf.js"></script>
 <script>
 const { jsPDF } = window.jspdf;
 const PS = <?= json_encode([
@@ -192,128 +193,121 @@ async function doDelete() {
 }
 
 async function generatePDF(d) {
-  const doc = new jsPDF();
-  const pw = doc.internal.pageSize.getWidth();
-  const ph = doc.internal.pageSize.getHeight();
-  const mg = 18;
-  let y = 25;
+  // Create A4 doc with ForgedCore letterhead background
+  const { doc, pw, ph, mg, safeTop, safeBottom } = await createLetterheadDoc();
+  const cw = pw - mg * 2;
+  let y = safeTop;
   const amountLeft = Math.max(0, Number(d.amount_due) - Number(d.amount_paid));
   const status = amountLeft <= 0 ? 'FULLY PAID' : (Number(d.amount_paid) > 0 ? 'PARTIALLY PAID' : 'UNPAID');
 
-  doc.setFillColor(242, 247, 250);
-  doc.roundedRect(mg, y - 4, pw - (mg * 2), 30, 3, 3, 'F');
+  doc.setFont('times');
 
-  try {
-    const logo = await loadImg('receipts/static/logo.png');
-    doc.addImage(logo, 'PNG', mg + 2, y - 1, 24, 24);
-  } catch (e) {}
-
-  doc.setFont('times', 'bold');
-  doc.setFontSize(13);
-  doc.text('FORGEDCORE ENGINEERING LTD', pw - mg - 2, y + 6, { align: 'right' });
-  doc.setFont('times', 'normal');
-  doc.setFontSize(9);
-  doc.text('Kpobiman (Amasaman), Accra', pw - mg - 2, y + 12, { align: 'right' });
-  doc.text('0540202096 / 0545286665', pw - mg - 2, y + 17, { align: 'right' });
-  doc.text('forgedcoreengineering@gmail.com', pw - mg - 2, y + 22, { align: 'right' });
-  y += 38;
-
-  doc.setFont('times', 'bold');
-  doc.setFontSize(20);
+  // ── Document Title ──
+  doc.setFontSize(20); doc.setFont('times', 'bold');
+  doc.setTextColor(13, 46, 70);
   doc.text('PAYSLIP', pw / 2, y, { align: 'center' });
-  doc.setFontSize(10);
-  doc.setTextColor(70, 70, 70);
-  doc.text('Official payment record', pw / 2, y + 5, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
-  y += 14;
+  y += 7;
 
-  doc.setDrawColor(220, 220, 220);
-  doc.line(mg, y, pw - mg, y);
-  y += 8;
-
-  doc.setFontSize(10.5);
-  doc.setFont('times', 'bold');
-  doc.text('Payslip No:', mg, y);
-  doc.setFont('times', 'normal');
-  doc.text(d.payslip_no, mg + 23, y);
-  doc.setFont('times', 'bold');
-  doc.text('Issue Date:', pw - mg - 45, y);
-  doc.setFont('times', 'normal');
-  doc.text(d.issue_date, pw - mg, y, { align: 'right' });
-  y += 14;
-
-  doc.setFont('times', 'bold');
-  doc.text('Full Name:', mg, y);
-  doc.setFont('times', 'normal');
-  doc.text(d.full_name, mg + 20, y);
+  // Teal underline accent
+  doc.setDrawColor(0, 128, 115);
+  doc.setLineWidth(0.6);
+  doc.line(pw / 2 - 16, y, pw / 2 + 16, y);
+  doc.setLineWidth(0.2);
   y += 10;
 
-  doc.setFont('times', 'bold');
-  doc.text('Services:', mg, y);
-  doc.setFont('times', 'normal');
-  const serviceLines = doc.splitTextToSize(d.service, pw - (mg * 2) - 18);
-  doc.text(serviceLines, mg + 18, y);
-  y += Math.max(16, serviceLines.length * 6 + 6);
-
-  const tableW = pw - mg * 2;
-  doc.setDrawColor(210, 210, 210);
-  doc.roundedRect(mg, y, tableW, 39, 2, 2, 'S');
-  doc.setFillColor(17, 32, 56);
-  doc.roundedRect(mg, y, tableW, 9, 2, 2, 'F');
-  doc.setFont('times', 'bold');
-  doc.setTextColor(255, 255, 255);
-  doc.text('DESCRIPTION', mg + 4, y + 5.5);
-  doc.text('AMOUNT (GHS)', mg + tableW - 4, y + 5.5, { align: 'right' });
-  doc.setTextColor(0, 0, 0);
-
-  doc.setFont('times', 'normal');
-  doc.text('Amount Supposed To Be Paid', mg + 4, y + 16);
-  doc.text(Number(d.amount_due).toFixed(2), mg + tableW - 4, y + 16, { align: 'right' });
-  doc.text('Amount Paid', mg + 4, y + 25);
-  doc.text(Number(d.amount_paid).toFixed(2), mg + tableW - 4, y + 25, { align: 'right' });
-  doc.setFont('times', 'bold');
-  doc.text('Amount Left To Pay', mg + 4, y + 34);
-  doc.setTextColor(amountLeft > 0 ? 220 : 0, amountLeft > 0 ? 0 : 128, 0);
-  doc.text(Number(amountLeft).toFixed(2), mg + tableW - 4, y + 34, { align: 'right' });
-  doc.setTextColor(0, 0, 0);
-  y += 48;
-
-  doc.setFillColor(
-    amountLeft <= 0 ? 231 : (Number(d.amount_paid) > 0 ? 254 : 254),
-    amountLeft <= 0 ? 245 : (Number(d.amount_paid) > 0 ? 243 : 242),
-    amountLeft <= 0 ? 232 : (Number(d.amount_paid) > 0 ? 199 : 199)
-  );
-  doc.roundedRect(mg, y - 2, 70, 10, 2, 2, 'F');
-  doc.setFontSize(9.5);
-  doc.setFont('times', 'bold');
-  doc.setTextColor(
-    amountLeft <= 0 ? 22 : (Number(d.amount_paid) > 0 ? 161 : 185),
-    amountLeft <= 0 ? 101 : (Number(d.amount_paid) > 0 ? 98 : 28),
-    amountLeft <= 0 ? 52 : (Number(d.amount_paid) > 0 ? 7 : 28)
-  );
-  doc.text('STATUS: ' + status, mg + 4, y + 4.5);
-  doc.setTextColor(0, 0, 0);
-
-  doc.setFont('times', 'bold');
-  doc.setFontSize(10.5);
-  doc.text('Authorized Signature:', pw - mg - 68, y);
+  // Sub-label
+  doc.setFontSize(9); doc.setFont('times', 'italic'); doc.setTextColor(100, 100, 100);
+  doc.text('Official Payment Record', pw / 2, y, { align: 'center' });
   y += 12;
+
+  // ── Payslip Meta (two-column) ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('PAYSLIP NO', mg, y);
+  doc.text('ISSUE DATE', pw / 2 + 2, y);
+  y += 5;
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(13, 46, 70);
+  doc.text(d.payslip_no, mg, y);
+  doc.text(d.issue_date, pw / 2 + 2, y);
+  y += 12;
+
+  // ── Employee Name ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('FULL NAME', mg, y); y += 5;
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(20, 20, 20);
+  doc.text(d.full_name, mg, y); y += 12;
+
+  // Separator line
+  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
+  doc.line(mg, y, pw - mg, y); y += 9;
+
+  // ── Services ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('SERVICES', mg, y); y += 5;
+  doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(20, 20, 20);
+  const serviceLines = doc.splitTextToSize(d.service, cw);
+  doc.text(serviceLines, mg, y);
+  y += serviceLines.length * 6 + 10;
+
+  // Separator line
+  doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
+  doc.line(mg, y, pw - mg, y); y += 9;
+
+  // ── Payment Table ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  doc.text('PAYMENT SUMMARY', mg, y); y += 7;
+
+  const rh = 10, tTop = y;
+  // Table header row
+  doc.setFillColor(13, 46, 70);
+  doc.roundedRect(mg, tTop, cw, rh, 1.5, 1.5, 'F');
+  doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(255, 255, 255);
+  doc.text('DESCRIPTION', mg + 4, tTop + 6.5);
+  doc.text('AMOUNT (GHS)', pw - mg - 4, tTop + 6.5, { align: 'right' });
+
+  [
+    { desc: 'Amount Supposed To Be Paid', amt: Number(d.amount_due).toFixed(2),  color: null },
+    { desc: 'Amount Paid',                amt: Number(d.amount_paid).toFixed(2), color: [0, 128, 64] },
+    { desc: 'Amount Left To Pay',         amt: Number(amountLeft).toFixed(2),   color: amountLeft > 0 ? [200, 30, 30] : [0, 128, 64] },
+  ].forEach((row, i) => {
+    const rY = tTop + rh + i * rh;
+    doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 250 : 255, i % 2 === 0 ? 252 : 255);
+    doc.rect(mg, rY, cw, rh, 'F');
+    doc.setFont('times', 'normal'); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
+    doc.text(row.desc, mg + 4, rY + 6.5);
+    if (row.color) { doc.setTextColor(...row.color); doc.setFont('times', 'bold'); }
+    doc.text(row.amt, pw - mg - 4, rY + 6.5, { align: 'right' });
+    doc.setTextColor(30, 30, 30);
+  });
+  // Table border
+  doc.setDrawColor(210, 215, 220); doc.setLineWidth(0.3);
+  doc.roundedRect(mg, tTop, cw, rh * 4, 1.5, 1.5, 'S');
+  y = tTop + rh * 4 + 8;
+
+  // ── Status Badge ──
+  const [br, bg, bb] = amountLeft <= 0 ? [220, 252, 231] : (Number(d.amount_paid) > 0 ? [254, 243, 199] : [254, 226, 226]);
+  const [tr2, tg2, tb2] = amountLeft <= 0 ? [21, 128, 61] : (Number(d.amount_paid) > 0 ? [146, 64, 14] : [153, 27, 27]);
+  doc.setFillColor(br, bg, bb);
+  doc.roundedRect(mg, y, 62, 9, 2, 2, 'F');
+  doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(tr2, tg2, tb2);
+  doc.text('STATUS: ' + status, mg + 4, y + 6);
+  doc.setTextColor(0, 0, 0);
+  y += 16;
+
+  // ── Signature ──
+  doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(60, 60, 60);
+  doc.text('Authorized Signature:', pw - mg - 68, y); y += 4;
   try {
     const sig = await loadImg('receipts/static/signature.png');
-    doc.addImage(sig, 'PNG', pw - mg - 68, y, 50, 16);
-    y += 20;
-  } catch (e) {
-    y += 8;
-  }
-  doc.setFont('times', 'normal');
+    doc.addImage(sig, 'PNG', pw - mg - 68, y, 55, 18); y += 22;
+  } catch (e) { y += 14; }
+  doc.setFont('times', 'normal'); doc.setFontSize(10); doc.setTextColor(20, 20, 20);
   doc.text('Eyram Dela Kuwornu', pw - mg - 68, y);
-  doc.setFontSize(9);
-  doc.text('(Director - Forgedcore Engineering Ltd)', pw - mg - 68, y + 6);
+  doc.setFontSize(8.5); doc.setTextColor(100, 100, 100);
+  doc.text('Director — Forgedcore Engineering Ltd', pw - mg - 68, y + 5);
 
-  doc.setFont('times', 'italic');
-  doc.setTextColor(80, 80, 80);
-  doc.text('This document is computer generated and valid without stamp.', pw / 2, ph - 12, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
+  // ── Footer Note ──
+  doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(140, 140, 140);
+  doc.text('This document is computer generated and valid without stamp.', pw / 2, safeBottom + 4, { align: 'center' });
 
   doc.save('payslip_' + d.payslip_no.replace(/\//g, '_') + '.pdf');
 }
