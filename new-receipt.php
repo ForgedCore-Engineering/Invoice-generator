@@ -20,6 +20,32 @@ require_once __DIR__ . '/includes/header.php';
     <div class="card-body">
 
       <form id="receiptForm" novalidate>
+
+        <!-- ── Outstanding Lookup ── -->
+        <div id="outstandingPanel" style="background:var(--acc-bg);border:1px solid rgba(0,153,153,.25);border-radius:var(--r);padding:14px 16px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:12.5px;font-weight:700;color:var(--acc)">⚡ Continue from an outstanding invoice</div>
+            <button type="button" id="clearOutBtn" onclick="clearOutstanding()" style="display:none;font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;padding:2px 6px">✕ Clear</button>
+          </div>
+          <div style="position:relative">
+            <input type="text" id="outSearch" placeholder="Search by client name…" autocomplete="off"
+              style="width:100%;background:var(--inp);border:1px solid var(--br);border-radius:var(--rs);padding:9px 12px;color:var(--txt);font-size:13px;outline:none"
+              oninput="searchOutstanding(this.value)">
+            <div id="outDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--br);border-radius:var(--rs);box-shadow:var(--sh);z-index:50;max-height:220px;overflow-y:auto"></div>
+          </div>
+          <div id="outSelected" style="display:none;margin-top:10px;padding:10px 12px;background:var(--inp);border-radius:var(--rs);font-size:12px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--txt2)">Invoice</span><span id="outSelInv" style="color:var(--acc);font-family:monospace"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--txt2)">Already paid</span><span id="outSelPaid" style="color:var(--green);font-weight:600"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <span style="color:var(--txt2)">Outstanding</span><span id="outSelBal" style="color:var(--red);font-weight:700"></span>
+            </div>
+          </div>
+        </div>
+
         <div class="fgrid">
 
           <div class="fg">
@@ -44,7 +70,7 @@ require_once __DIR__ . '/includes/header.php';
             <textarea id="description" name="description" placeholder="e.g. Electrical Installation and Wiring at Client Premises" required></textarea>
           </div>
 
-          <div class="fg">
+          <div class="fg" id="totalFg">
             <label class="req" for="total">Total Amount (GHS)</label>
             <div class="ipfx">
               <span>₵</span>
@@ -52,12 +78,14 @@ require_once __DIR__ . '/includes/header.php';
             </div>
           </div>
 
-          <div class="fg">
-            <label class="req" for="paid">Amount Paid (GHS)</label>
+          <div class="fg" id="paidFg">
+            <label class="req" for="paid" id="paidLabel">Amount Paid (GHS)</label>
             <div class="ipfx">
               <span>₵</span>
               <input type="number" id="paid" name="paid" value="0" step="0.01" min="0" required>
             </div>
+            <!-- shown only in continuation mode -->
+            <div id="paidHelper" style="display:none;font-size:11px;color:var(--txt3);margin-top:4px">This new payment will be <strong style="color:var(--green)">added</strong> to the existing paid amount.</div>
           </div>
 
         </div>
@@ -151,7 +179,117 @@ require_once __DIR__ . '/includes/header.php';
 <script>
 const { jsPDF } = window.jspdf;
 
-/* ── Live Preview ── */
+/* ══════════════════════════════════════════
+   OUTSTANDING LOOKUP
+══════════════════════════════════════════ */
+let _outRecord = null; // holds the selected outstanding record
+let _outTimer  = null;
+
+function searchOutstanding(q) {
+  clearTimeout(_outTimer);
+  const dd = document.getElementById('outDropdown');
+  if (q.length < 2) { dd.style.display = 'none'; return; }
+  _outTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('search-outstanding.php?type=receipt&q=' + encodeURIComponent(q));
+      const rows = await r.json();
+      if (!rows.length) {
+        dd.innerHTML = '<div style="padding:10px 14px;font-size:12.5px;color:var(--txt3)">No outstanding invoices found for that name.</div>';
+      } else {
+        dd.innerHTML = rows.map((row, i) => {
+          const name = row.name || '';
+          const inv = row.invoice_no || '';
+          const out = row.outstanding ? row.outstanding.toFixed(2) : '0.00';
+          return '<div class="out-item" data-idx="' + i + '" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--br);font-size:12.5px;transition:background .15s" onmouseover="this.style.background=\'var(--card-h)\'" onmouseout="this.style.background=\'\'"><div style="font-weight:600;color:var(--txt)">' + name + '</div><div style="color:var(--txt3);font-size:11px">' + inv + ' &middot; Outstanding: <span style="color:var(--red);font-weight:600">GH&#x20B5; ' + out + '</span></div></div>';
+        }).join('');
+        dd._rows = rows;
+        dd.querySelectorAll('.out-item').forEach(function(el) {
+          el.addEventListener('mousedown', function(ev) {
+            ev.preventDefault();
+            selectOutstanding(dd._rows[parseInt(this.dataset.idx)]);
+          });
+        });
+      }
+      dd.style.display = 'block';
+    } catch(e) { dd.style.display = 'none'; }
+  }, 280);
+}
+
+function selectOutstanding(row) {
+  _outRecord = row;
+  document.getElementById('outDropdown').style.display = 'none';
+  document.getElementById('outSearch').value = row.name;
+  document.getElementById('clearOutBtn').style.display = 'inline';
+  document.getElementById('outSelected').style.display = 'block';
+  document.getElementById('outSelInv').textContent  = row.invoice_no;
+  document.getElementById('outSelPaid').textContent = 'GH₵ ' + row.paid.toFixed(2);
+  document.getElementById('outSelBal').textContent  = 'GH₵ ' + row.outstanding.toFixed(2);
+
+  // Auto-fill and lock fields
+  const lock = (id, val) => {
+    const el = document.getElementById(id);
+    el.value = val;
+    el.readOnly = true;
+    el.style.opacity = '0.65';
+    el.style.cursor = 'not-allowed';
+  };
+  lock('name',        row.name);
+  lock('contact',     row.contact);
+  lock('address',     row.address);
+  lock('description', row.description);
+  lock('total',       row.total.toFixed(2));
+
+  // Switch paid field to "new payment" mode
+  document.getElementById('paidLabel').textContent = 'New Payment Amount (GHS) *';
+  document.getElementById('paid').value = '';
+  document.getElementById('paid').placeholder = `Max GH₵ ${row.outstanding.toFixed(2)}`;
+  document.getElementById('paid').max = row.outstanding.toFixed(2);
+  document.getElementById('paid').readOnly = false;
+  document.getElementById('paid').style.opacity = '';
+  document.getElementById('paid').style.cursor = '';
+  document.getElementById('paidHelper').style.display = 'block';
+
+  // Update submit button
+  document.getElementById('submitBtn').innerHTML =
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Record Payment &amp; Issue Receipt';
+
+  updatePreview();
+}
+
+function clearOutstanding() {
+  _outRecord = null;
+  document.getElementById('outSearch').value = '';
+  document.getElementById('outDropdown').style.display = 'none';
+  document.getElementById('outSelected').style.display = 'none';
+  document.getElementById('clearOutBtn').style.display = 'none';
+
+  ['name','contact','address','description','total'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = '';
+    el.readOnly = false;
+    el.style.opacity = '';
+    el.style.cursor = '';
+  });
+  document.getElementById('paid').value = '0';
+  document.getElementById('paid').removeAttribute('max');
+  document.getElementById('paid').placeholder = '';
+  document.getElementById('paidLabel').textContent = 'Amount Paid (GHS)';
+  document.getElementById('paidHelper').style.display = 'none';
+  document.getElementById('submitBtn').innerHTML =
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Generate &amp; Download Receipt';
+  updatePreview();
+}
+
+// Close dropdown on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#outstandingPanel')) {
+    document.getElementById('outDropdown').style.display = 'none';
+  }
+});
+
+/* ══════════════════════════════════════════
+   LIVE PREVIEW
+══════════════════════════════════════════ */
 function updatePreview() {
   const name  = document.getElementById('name').value.trim();
   const addr  = document.getElementById('address').value.trim();
@@ -203,7 +341,54 @@ document.getElementById('receiptForm').addEventListener('submit', async function
   e.preventDefault();
   const btn    = document.getElementById('submitBtn');
   const errBox = document.getElementById('errBox');
+  errBox.style.display = 'none';
 
+  /* ── CONTINUATION MODE: recording a new payment on an existing record ── */
+  if (_outRecord) {
+    const newPmt = parseFloat(document.getElementById('paid').value) || 0;
+    if (newPmt <= 0)                      { showErr('Please enter a payment amount greater than 0.'); return; }
+    if (newPmt > _outRecord.outstanding)  { showErr(`Payment cannot exceed the outstanding balance of GH₵ ${_outRecord.outstanding.toFixed(2)}.`); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spin"></div> Recording & Issuing…';
+
+    try {
+      // 1. Record the payment in DB
+      const pr = await fetch('record-payment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: _outRecord.id, type: 'receipt', new_payment: newPmt })
+      });
+      const pres = await pr.json();
+      if (!pr.ok || !pres.success) throw new Error(pres.error || 'Failed to record payment');
+
+      // 2. Build the PDF data using the existing invoice_no and date (no new number needed)
+      const pdfData = {
+        name:        _outRecord.name,
+        address:     _outRecord.address,
+        contact:     _outRecord.contact,
+        description: _outRecord.description,
+        total:       _outRecord.total,
+        paid:        pres.new_paid,          // updated cumulative paid
+        invoice_no:  _outRecord.invoice_no,
+        date:        _outRecord.date,
+      };
+
+      await generatePDF(pdfData);
+
+      document.getElementById('receiptForm').style.display = 'none';
+      document.getElementById('successInv').textContent = _outRecord.invoice_no;
+      document.getElementById('successBox').style.display = 'block';
+      return;
+    } catch(err) {
+      showErr('Error: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Record Payment &amp; Issue Receipt';
+      return;
+    }
+  }
+
+  /* ── NORMAL MODE: brand new receipt ── */
   const data = {
     name:        document.getElementById('name').value.trim(),
     address:     document.getElementById('address').value.trim(),
@@ -222,7 +407,6 @@ document.getElementById('receiptForm').addEventListener('submit', async function
 
   btn.disabled = true;
   btn.innerHTML = '<div class="spin"></div> Generating…';
-  errBox.style.display = 'none';
 
   try {
     const res = await fetch('get-invoice-info.php', {

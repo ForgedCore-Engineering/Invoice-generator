@@ -122,6 +122,52 @@ require_once __DIR__ . '/includes/header.php';
   </div>
 </div>
 
+<?php if ($leftToPay > 0): ?>
+<!-- ── Record Payment Panel ── -->
+<div class="card" id="recordPaymentCard">
+  <div class="card-hdr">
+    <div>
+      <div class="card-title">Record a Payment</div>
+      <div class="card-sub">Outstanding: <span id="rpOutstanding" style="color:var(--red);font-weight:700">GH₵ <?= number_format($leftToPay,2) ?></span></div>
+    </div>
+  </div>
+  <div class="card-body" style="display:flex;flex-direction:column;gap:14px">
+
+    <div class="fg" style="margin:0">
+      <label class="req" for="rpAmount" style="font-size:12px;color:var(--txt2);font-weight:600;margin-bottom:6px;display:block">New Payment Amount (GHS)</label>
+      <div class="ipfx">
+        <span>₵</span>
+        <input type="number" id="rpAmount" step="0.01" min="0.01" max="<?= number_format($leftToPay,2,'.','') ?>" placeholder="0.00" style="width:100%" oninput="rpUpdatePreview()">
+      </div>
+    </div>
+
+    <!-- Live balance preview -->
+    <div id="rpPreview" style="display:none;background:var(--inp);border:1px solid var(--br);border-radius:var(--rs);padding:12px 14px;font-size:12.5px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="color:var(--txt2)">Current paid</span>
+        <span style="color:var(--txt)">GH₵ <?= number_format((float)$payslip['amount_paid'],2) ?></span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="color:var(--txt2)">+ This payment</span>
+        <span id="rpThisAmt" style="color:var(--green);font-weight:600">GH₵ 0.00</span>
+      </div>
+      <div style="height:1px;background:var(--br);margin:4px 0 8px"></div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--txt2)">New outstanding</span>
+        <span id="rpNewBal" style="font-weight:700">GH₵ 0.00</span>
+      </div>
+    </div>
+
+    <div id="rpErr" style="display:none;background:var(--red-bg);border:1px solid rgba(239,68,68,.25);border-radius:var(--rs);padding:10px 12px;font-size:12.5px;color:var(--red)"></div>
+
+    <button id="rpBtn" onclick="submitPayment('payslip', <?= (int)$payslip['id'] ?>)" class="btn btn-p btn-lg" style="justify-content:center">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      Record Payment
+    </button>
+  </div>
+</div>
+<?php endif; ?>
+
 <div class="overlay" id="delOverlay">
   <div class="modal">
     <h3>Delete This Payslip?</h3>
@@ -139,6 +185,63 @@ require_once __DIR__ . '/includes/header.php';
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="assets/letterhead-pdf.js"></script>
+<?php if ($leftToPay > 0): ?>
+<script>
+/* ── Record Payment ── */
+const _rpMax = <?= number_format($leftToPay,2,'.','') ?>;
+
+function rpUpdatePreview() {
+  const inp = document.getElementById('rpAmount');
+  const val = parseFloat(inp.value) || 0;
+  const preview = document.getElementById('rpPreview');
+  const err = document.getElementById('rpErr');
+  err.style.display = 'none';
+  if (val <= 0) { preview.style.display = 'none'; return; }
+  preview.style.display = 'block';
+  const applied = Math.min(val, _rpMax);
+  const newBal  = Math.max(0, _rpMax - applied);
+  document.getElementById('rpThisAmt').textContent = 'GH₵ ' + applied.toFixed(2);
+  const balEl = document.getElementById('rpNewBal');
+  balEl.textContent = 'GH₵ ' + newBal.toFixed(2);
+  balEl.style.color = newBal <= 0 ? 'var(--green)' : 'var(--ylw)';
+  if (val > _rpMax) inp.style.borderColor = 'var(--ylw)';
+  else inp.style.borderColor = '';
+}
+
+async function submitPayment(type, id) {
+  const inp = document.getElementById('rpAmount');
+  const btn = document.getElementById('rpBtn');
+  const err = document.getElementById('rpErr');
+  const val = parseFloat(inp.value) || 0;
+  err.style.display = 'none';
+  if (val <= 0) {
+    err.textContent = 'Please enter a payment amount greater than zero.';
+    err.style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div> Recording…';
+  try {
+    const r = await fetch('record-payment.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, type, new_payment: val })
+    });
+    const res = await r.json();
+    if (!r.ok || !res.success) throw new Error(res.error || 'Failed to record payment');
+    let msg = res.message;
+    if (res.capped) msg += ' (capped to outstanding balance)';
+    toast(msg);
+    setTimeout(() => location.reload(), 1200);
+  } catch(e) {
+    err.textContent = e.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Record Payment';
+  }
+}
+</script>
+<?php endif; ?>
 <script>
 const { jsPDF } = window.jspdf;
 const PS = <?= json_encode([
@@ -307,7 +410,7 @@ async function generatePDF(d) {
 
   // ── Footer Note ──
   doc.setFont('times', 'italic'); doc.setFontSize(8); doc.setTextColor(140, 140, 140);
-  doc.text('This document is computer generated and valid without stamp.', pw / 2, safeBottom + 4, { align: 'center' });
+  doc.text('This document is computer generated and valid without stamp.', pw / 2, safeBottom - 2, { align: 'center' });
 
   doc.save('payslip_' + d.payslip_no.replace(/\//g, '_') + '.pdf');
 }

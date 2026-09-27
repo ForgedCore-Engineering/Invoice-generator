@@ -8,8 +8,8 @@
  *   doc.save('filename.pdf');
  *
  * Safe content area (A4 mm):
- *   safeTop    = 58   — below the logo / header band
- *   safeBottom = 265  — above the teal footer contact strip
+ *   safeTop    = 78   — below the logo / header band (incl. top-right teal geometric accent)
+ *   safeBottom = 252  — above the "GEARED FOR ENGINEERING DOMINANCE" watermark & teal footer bar
  *   mg (side)  = 20   — left & right margin
  */
 
@@ -37,8 +37,8 @@ function loadLetterheadImage(url) {
  *   pw: number,   // page width  (mm) = 210
  *   ph: number,   // page height (mm) = 297
  *   mg: number,   // side margin (mm) = 20
- *   safeTop: number,    // first usable Y (mm) = 58
- *   safeBottom: number  // last  usable Y (mm) = 265
+ *   safeTop: number,    // first usable Y (mm) = 78
+ *   safeBottom: number  // last  usable Y (mm) = 252
  * }>}
  */
 async function createLetterheadDoc(letterheadUrl = 'assets/letterhead.png') {
@@ -63,7 +63,7 @@ async function createLetterheadDoc(letterheadUrl = 'assets/letterhead.png') {
     pw,
     ph,
     mg: 20,         // side margin
-    safeTop: 58,    // below logo / decorative header band
-    safeBottom: 265 // above teal footer strip
+    safeTop: 78,    // below logo / decorative header band (incl. top-right teal geometric accent ~75mm)
+    safeBottom: 252 // above "GEARED FOR ENGINEERING DOMINANCE" watermark + teal footer bar
   };
 }

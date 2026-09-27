@@ -17,6 +17,32 @@ require_once __DIR__ . '/includes/header.php';
     </div>
     <div class="card-body">
       <form id="payslipForm" novalidate>
+
+        <!-- ── Outstanding Lookup ── -->
+        <div id="outstandingPanel" style="background:var(--acc-bg);border:1px solid rgba(0,153,153,.25);border-radius:var(--r);padding:14px 16px;margin-bottom:18px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:12.5px;font-weight:700;color:var(--acc)">⚡ Continue from an outstanding payslip</div>
+            <button type="button" id="clearOutBtn" onclick="clearOutstanding()" style="display:none;font-size:11px;color:var(--red);background:none;border:none;cursor:pointer;padding:2px 6px">✕ Clear</button>
+          </div>
+          <div style="position:relative">
+            <input type="text" id="outSearch" placeholder="Search by name…" autocomplete="off"
+              style="width:100%;background:var(--inp);border:1px solid var(--br);border-radius:var(--rs);padding:9px 12px;color:var(--txt);font-size:13px;outline:none"
+              oninput="searchOutstanding(this.value)">
+            <div id="outDropdown" style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--card);border:1px solid var(--br);border-radius:var(--rs);box-shadow:var(--sh);z-index:50;max-height:220px;overflow-y:auto"></div>
+          </div>
+          <div id="outSelected" style="display:none;margin-top:10px;padding:10px 12px;background:var(--inp);border-radius:var(--rs);font-size:12px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--txt2)">Payslip No</span><span id="outSelNo" style="color:var(--acc);font-family:monospace"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+              <span style="color:var(--txt2)">Already paid</span><span id="outSelPaid" style="color:var(--green);font-weight:600"></span>
+            </div>
+            <div style="display:flex;justify-content:space-between">
+              <span style="color:var(--txt2)">Outstanding</span><span id="outSelBal" style="color:var(--red);font-weight:700"></span>
+            </div>
+          </div>
+        </div>
+
         <div class="fgrid">
           <div class="fg full">
             <label class="req" for="full_name">Full Name</label>
@@ -33,12 +59,13 @@ require_once __DIR__ . '/includes/header.php';
               <input type="number" id="amount_due" name="amount_due" placeholder="0.00" step="0.01" min="0" required>
             </div>
           </div>
-          <div class="fg">
-            <label class="req" for="amount_paid">Amount Paid (GHS)</label>
+          <div class="fg" id="paidFg">
+            <label class="req" for="amount_paid" id="paidLabel">Amount Paid (GHS)</label>
             <div class="ipfx">
               <span>₵</span>
               <input type="number" id="amount_paid" name="amount_paid" placeholder="0.00" step="0.01" min="0" required>
             </div>
+            <div id="paidHelper" style="display:none;font-size:11px;color:var(--txt3);margin-top:4px">This new payment will be <strong style="color:var(--green)">added</strong> to the existing paid amount.</div>
           </div>
         </div>
 
@@ -130,6 +157,104 @@ require_once __DIR__ . '/includes/header.php';
 <script>
 const { jsPDF } = window.jspdf;
 
+/* ══════════════════════════════════════════
+   OUTSTANDING LOOKUP
+══════════════════════════════════════════ */
+let _outRecord = null;
+let _outTimer  = null;
+
+function searchOutstanding(q) {
+  clearTimeout(_outTimer);
+  const dd = document.getElementById('outDropdown');
+  if (q.length < 2) { dd.style.display = 'none'; return; }
+  _outTimer = setTimeout(async () => {
+    try {
+      const r = await fetch('search-outstanding.php?type=payslip&q=' + encodeURIComponent(q));
+      const rows = await r.json();
+      if (!rows.length) {
+        dd.innerHTML = '<div style="padding:10px 14px;font-size:12.5px;color:var(--txt3)">No outstanding payslips found for that name.</div>';
+      } else {
+        dd.innerHTML = rows.map((row, i) => {
+          const name = row.full_name || '';
+          const no = row.payslip_no || '';
+          const out = row.outstanding ? row.outstanding.toFixed(2) : '0.00';
+          return '<div class="out-item" data-idx="' + i + '" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--br);font-size:12.5px;transition:background .15s" onmouseover="this.style.background=\'var(--card-h)\'" onmouseout="this.style.background=\'\'"><div style="font-weight:600;color:var(--txt)">' + name + '</div><div style="color:var(--txt3);font-size:11px">' + no + ' &middot; Outstanding: <span style="color:var(--red);font-weight:600">GH&#x20B5; ' + out + '</span></div></div>';
+        }).join('');
+        dd._rows = rows;
+        dd.querySelectorAll('.out-item').forEach(function(el) {
+          el.addEventListener('mousedown', function(ev) {
+            ev.preventDefault();
+            selectOutstanding(dd._rows[parseInt(this.dataset.idx)]);
+          });
+        });
+      }
+      dd.style.display = 'block';
+    } catch(e) { dd.style.display = 'none'; }
+  }, 280);
+}
+
+function selectOutstanding(row) {
+  _outRecord = row;
+  document.getElementById('outDropdown').style.display = 'none';
+  document.getElementById('outSearch').value = row.full_name;
+  document.getElementById('clearOutBtn').style.display = 'inline';
+  document.getElementById('outSelected').style.display = 'block';
+  document.getElementById('outSelNo').textContent   = row.payslip_no;
+  document.getElementById('outSelPaid').textContent = 'GH₵ ' + row.amount_paid.toFixed(2);
+  document.getElementById('outSelBal').textContent  = 'GH₵ ' + row.outstanding.toFixed(2);
+
+  const lock = (id, val) => {
+    const el = document.getElementById(id);
+    el.value = val;
+    el.readOnly = true;
+    el.style.opacity = '0.65';
+    el.style.cursor  = 'not-allowed';
+  };
+  lock('full_name',  row.full_name);
+  lock('service',    row.service);
+  lock('amount_due', row.amount_due.toFixed(2));
+
+  document.getElementById('paidLabel').textContent = 'New Payment Amount (GHS) *';
+  document.getElementById('amount_paid').value = '';
+  document.getElementById('amount_paid').placeholder = `Max GH₵ ${row.outstanding.toFixed(2)}`;
+  document.getElementById('amount_paid').max = row.outstanding.toFixed(2);
+  document.getElementById('amount_paid').readOnly = false;
+  document.getElementById('amount_paid').style.opacity = '';
+  document.getElementById('amount_paid').style.cursor  = '';
+  document.getElementById('paidHelper').style.display = 'block';
+
+  document.getElementById('submitBtn').innerHTML =
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Record Payment &amp; Issue Payslip';
+  updatePreview();
+}
+
+function clearOutstanding() {
+  _outRecord = null;
+  document.getElementById('outSearch').value = '';
+  document.getElementById('outDropdown').style.display = 'none';
+  document.getElementById('outSelected').style.display = 'none';
+  document.getElementById('clearOutBtn').style.display = 'none';
+  ['full_name','service','amount_due'].forEach(id => {
+    const el = document.getElementById(id);
+    el.value = ''; el.readOnly = false; el.style.opacity = ''; el.style.cursor = '';
+  });
+  document.getElementById('amount_paid').value = '';
+  document.getElementById('amount_paid').removeAttribute('max');
+  document.getElementById('amount_paid').placeholder = '0.00';
+  document.getElementById('paidLabel').textContent = 'Amount Paid (GHS)';
+  document.getElementById('paidHelper').style.display = 'none';
+  document.getElementById('submitBtn').innerHTML =
+    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg> Generate &amp; Download Payslip';
+  updatePreview();
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#outstandingPanel')) document.getElementById('outDropdown').style.display = 'none';
+});
+
+/* ══════════════════════════════════════════
+   LIVE PREVIEW & FORM
+══════════════════════════════════════════ */
 function updatePreview() {
   const fullName = document.getElementById('full_name').value.trim();
   const service = document.getElementById('service').value.trim();
@@ -195,7 +320,49 @@ document.getElementById('payslipForm').addEventListener('submit', async function
   e.preventDefault();
   const btn = document.getElementById('submitBtn');
   const errBox = document.getElementById('errBox');
+  errBox.style.display = 'none';
 
+  /* ── CONTINUATION MODE ── */
+  if (_outRecord) {
+    const newPmt = parseFloat(document.getElementById('amount_paid').value) || 0;
+    if (newPmt <= 0)                     { showErr('Please enter a payment amount greater than 0.'); return; }
+    if (newPmt > _outRecord.outstanding) { showErr(`Payment cannot exceed the outstanding balance of GH₵ ${_outRecord.outstanding.toFixed(2)}.`); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spin"></div> Recording & Issuing…';
+
+    try {
+      const pr = await fetch('record-payment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: _outRecord.id, type: 'payslip', new_payment: newPmt })
+      });
+      const pres = await pr.json();
+      if (!pr.ok || !pres.success) throw new Error(pres.error || 'Failed to record payment');
+
+      const pdfData = {
+        full_name:   _outRecord.full_name,
+        service:     _outRecord.service,
+        amount_due:  _outRecord.amount_due,
+        amount_paid: pres.new_paid,
+        payslip_no:  _outRecord.payslip_no,
+        issue_date:  _outRecord.issue_date,
+      };
+      await generatePDF(pdfData);
+
+      document.getElementById('payslipForm').style.display = 'none';
+      document.getElementById('successNo').textContent = _outRecord.payslip_no;
+      document.getElementById('successBox').style.display = 'block';
+      return;
+    } catch(err) {
+      showErr('Error: ' + err.message);
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> Record Payment &amp; Issue Payslip';
+      return;
+    }
+  }
+
+  /* ── NORMAL MODE ── */
   const data = {
     full_name: document.getElementById('full_name').value.trim(),
     service: document.getElementById('service').value.trim(),
@@ -211,7 +378,6 @@ document.getElementById('payslipForm').addEventListener('submit', async function
 
   btn.disabled = true;
   btn.innerHTML = '<div class="spin"></div> Generating...';
-  errBox.style.display = 'none';
 
   try {
     const infoRes = await fetch('get-payslip-info.php', {
