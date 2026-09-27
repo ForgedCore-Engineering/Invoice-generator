@@ -8,8 +8,8 @@
  *   doc.save('filename.pdf');
  *
  * Safe content area (A4 mm):
- *   safeTop    = 78   — below the logo / header band (incl. top-right teal geometric accent)
- *   safeBottom = 252  — above the "GEARED FOR ENGINEERING DOMINANCE" watermark & teal footer bar
+ *   safeTop    = 70   — below the logo / header band (incl. top-right teal geometric accent)
+ *   safeBottom = 236  — above the "GEARED FOR ENGINEERING DOMINANCE" watermark & teal footer bar
  *   mg (side)  = 20   — left & right margin
  */
 
@@ -37,8 +37,8 @@ function loadLetterheadImage(url) {
  *   pw: number,   // page width  (mm) = 210
  *   ph: number,   // page height (mm) = 297
  *   mg: number,   // side margin (mm) = 20
- *   safeTop: number,    // first usable Y (mm) = 78
- *   safeBottom: number  // last  usable Y (mm) = 252
+ *   safeTop: number,    // first usable Y (mm) = 70
+ *   safeBottom: number  // last  usable Y (mm) = 236
  * }>}
  */
 async function createLetterheadDoc(letterheadUrl = 'assets/letterhead.png') {
@@ -50,8 +50,9 @@ async function createLetterheadDoc(letterheadUrl = 'assets/letterhead.png') {
   const ph = doc.internal.pageSize.getHeight();  // 297
 
   // Draw the letterhead as a full-page background image
+  let img;
   try {
-    const img = await loadLetterheadImage(letterheadUrl);
+    img = await loadLetterheadImage(letterheadUrl);
     doc.addImage(img, 'PNG', 0, 0, pw, ph);
   } catch (e) {
     // If letterhead fails to load, continue without it (graceful degradation)
@@ -62,8 +63,12 @@ async function createLetterheadDoc(letterheadUrl = 'assets/letterhead.png') {
     doc,
     pw,
     ph,
+    addPage() {
+      doc.addPage();
+      if (img) doc.addImage(img, "PNG", 0, 0, pw, ph);
+    },
     mg: 20,         // side margin
-    safeTop: 78,    // below logo / decorative header band (incl. top-right teal geometric accent ~75mm)
-    safeBottom: 252 // above "GEARED FOR ENGINEERING DOMINANCE" watermark + teal footer bar
+    safeTop: 70,    // clear of the printed header
+    safeBottom: 236 // above the slogan and footer artwork
   };
 }

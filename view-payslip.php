@@ -184,8 +184,8 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="assets/letterhead-pdf.js?v=2"></script>
-<script src="assets/payslip-pdf.js?v=1"></script>
+<script src="assets/letterhead-pdf.js?v=3"></script>
+<script src="assets/payslip-pdf.js?v=2"></script>
 <?php if ($leftToPay > 0): ?>
 <script>
 /* ── Record Payment ── */

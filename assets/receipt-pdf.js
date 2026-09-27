@@ -1,9 +1,25 @@
 // Shared branded generator for automatic downloads and re-downloads.
 async function generatePDF(d) {
   // Create A4 doc with ForgedCore letterhead background
-  const { doc, pw, ph, mg, safeTop, safeBottom } = await createLetterheadDoc();
+  const { doc, pw, ph, mg, safeTop, safeBottom, addPage } = await createLetterheadDoc();
   const cw = pw - mg * 2;
   let y = safeTop;
+  // Keep flowing content above the footer note and printed letterhead slogan.
+  const bodyBottom = safeBottom - 8;
+  function reserve(height) {
+    if (y + height > bodyBottom) {
+      addPage();
+      y = safeTop;
+    }
+  }
+  function wrappedText(value, width = cw) {
+    const lines = doc.splitTextToSize(String(value || ''), width);
+    for (const line of lines) {
+      reserve(5);
+      doc.text(line, mg, y);
+      y += 5;
+    }
+  }
 
   doc.setFont('times');
 
@@ -18,7 +34,7 @@ async function generatePDF(d) {
   doc.setLineWidth(0.6);
   doc.line(pw / 2 - 18, y, pw / 2 + 18, y);
   doc.setLineWidth(0.2);
-  y += 10;
+  y += 6;
 
   // ── Invoice Meta (two-column) ──
   doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
@@ -28,43 +44,44 @@ async function generatePDF(d) {
   doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(13, 46, 70);
   doc.text(d.invoice_no, mg, y);
   doc.text(d.date, pw / 2 + 2, y);
-  y += 10;
+  y += 6;
 
   // ── Bill To ──
   doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
   doc.text('BILL TO', mg, y); y += 5;
   doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(20, 20, 20);
-  doc.text(d.name, mg, y); y += 6;
+  wrappedText(d.name);
   doc.setFontSize(9.5); doc.setTextColor(80, 80, 80);
-  doc.text(d.address + '   |   ' + d.contact, mg, y); y += 12;
+  wrappedText(d.address + '   |   ' + d.contact); y += 3;
 
   // Separator line
   doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
-  doc.line(mg, y, pw - mg, y); y += 9;
+  doc.line(mg, y, pw - mg, y); y += 6;
 
   // ── Description ──
   doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  reserve(12);
   doc.text('SERVICE / DESCRIPTION', mg, y); y += 5;
   doc.setFont('times', 'normal'); doc.setFontSize(10.5); doc.setTextColor(20, 20, 20);
-  const descLines = doc.splitTextToSize(d.description, cw);
-  doc.text(descLines, mg, y);
-  y += descLines.length * 6 + 10;
+  wrappedText(d.description);
+  y += 5;
 
   // Separator line
   doc.setDrawColor(200, 200, 200); doc.setLineWidth(0.3);
-  doc.line(mg, y, pw - mg, y); y += 9;
+  doc.line(mg, y, pw - mg, y); y += 6;
 
   // ── Payment Summary Table ──
   doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(80, 80, 80);
+  reserve(81);
   doc.text('PAYMENT SUMMARY', mg, y); y += 7;
 
-  const rh = 10, tTop = y;
+  const rh = 8, tTop = y;
   // Table header row
   doc.setFillColor(13, 46, 70);
   doc.roundedRect(mg, tTop, cw, rh, 1.5, 1.5, 'F');
   doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(255, 255, 255);
-  doc.text('DESCRIPTION', mg + 4, tTop + 6.5);
-  doc.text('AMOUNT (GHS)', pw - mg - 4, tTop + 6.5, { align: 'right' });
+  doc.text('DESCRIPTION', mg + 4, tTop + 5.5);
+  doc.text('AMOUNT (GHS)', pw - mg - 4, tTop + 5.5, { align: 'right' });
 
   const bal = d.total - d.paid;
   [
@@ -76,9 +93,9 @@ async function generatePDF(d) {
     doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 250 : 255, i % 2 === 0 ? 252 : 255);
     doc.rect(mg, rY, cw, rh, 'F');
     doc.setFont('times', 'normal'); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
-    doc.text(row.desc, mg + 4, rY + 6.5);
+    doc.text(row.desc, mg + 4, rY + 5.5);
     if (row.color) { doc.setTextColor(...row.color); doc.setFont('times', 'bold'); }
-    doc.text(row.amt, pw - mg - 4, rY + 6.5, { align: 'right' });
+    doc.text(row.amt, pw - mg - 4, rY + 5.5, { align: 'right' });
     doc.setTextColor(30, 30, 30);
   });
   // Table border
@@ -95,7 +112,8 @@ async function generatePDF(d) {
   doc.setFont('times', 'bold'); doc.setFontSize(9); doc.setTextColor(tr, tg, tb);
   doc.text('STATUS: ' + status, mg + 4, y + 6);
   doc.setTextColor(0, 0, 0);
-  y += 16;
+  // Place the signature alongside the status badge, in the right column.
+  y += 3;
 
   // ── Signature ──
   doc.setFontSize(9.5); doc.setFont('times', 'bold'); doc.setTextColor(60, 60, 60);

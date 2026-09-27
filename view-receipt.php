@@ -253,8 +253,8 @@ if ($error): ?>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="assets/letterhead-pdf.js?v=2"></script>
-<script src="assets/receipt-pdf.js?v=1"></script>
+<script src="assets/letterhead-pdf.js?v=3"></script>
+<script src="assets/receipt-pdf.js?v=2"></script>
 <script>
 /* ── Record Payment ── */
 const _rpMax = <?= number_format(max(0,$bal),2,'.','') ?>;
