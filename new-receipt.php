@@ -176,6 +176,8 @@ require_once __DIR__ . '/includes/header.php';
 </div><!-- /g2-form -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="assets/letterhead-pdf.js?v=2"></script>
+<script src="assets/receipt-pdf.js?v=1"></script>
 <script>
 const { jsPDF } = window.jspdf;
 
@@ -456,111 +458,6 @@ function resetForm() {
 }
 
 /* ── PDF Generation ── */
-async function generatePDF(d) {
-  const doc = new jsPDF();
-  const pw = doc.internal.pageSize.getWidth();
-  const mg = 30;
-  const cw = pw - mg * 2;
-  let y = mg;
-
-  doc.setFont('times');
-
-  // Logo
-  let logoLoaded = false;
-  try {
-    const logoImg = await loadImg('receipts/static/logo.png');
-    doc.addImage(logoImg, 'PNG', mg, y, 30, 30);
-    logoLoaded = true;
-  } catch (e) {}
-
-  // Company info
-  doc.setFontSize(11); doc.setFont('times', 'bold');
-  doc.text('FORGEDCORE ENGINEERING LTD', pw - mg, y + 10, { align: 'right' });
-  doc.setFontSize(9);  doc.setFont('times', 'normal');
-  doc.text('Kpobiman (Amasaman), Accra', pw - mg, y + 17, { align: 'right' });
-  doc.text('0540202096 / 0545286665 | forgedcoreengineering@gmail.com', pw - mg, y + 23, { align: 'right' });
-  doc.text('www.forgedcoreengineering.com', pw - mg, y + 29, { align: 'right' });
-  y += logoLoaded ? 42 : 22;
-
-  // Title
-  doc.setFontSize(18); doc.setFont('times', 'bold');
-  doc.text('RECEIPT', pw / 2, y, { align: 'center' });
-  y += 15;
-
-  // Invoice + Date  |  Bill To
-  doc.setFontSize(10);
-  doc.setFont('times', 'bold');   doc.text('Invoice No:', mg, y);
-  doc.setFont('times', 'normal'); doc.text(d.invoice_no, mg + 35, y);
-  doc.setFont('times', 'bold');   doc.text('Date:', mg, y + 7);
-  doc.setFont('times', 'normal'); doc.text(d.date, mg + 35, y + 7);
-
-  doc.setFont('times', 'bold');   doc.text('BILL TO', pw - mg, y, { align: 'right' });
-  doc.setFont('times', 'normal');
-  doc.text('Client: '  + d.name,    pw - mg, y + 7,  { align: 'right' });
-  doc.text('Address: ' + d.address,  pw - mg, y + 14, { align: 'right' });
-  doc.text('Contact: ' + d.contact,  pw - mg, y + 21, { align: 'right' });
-  y += 35;
-
-  // Description
-  doc.setFontSize(12); doc.setFont('times', 'bold');
-  doc.text(d.description.toUpperCase(), pw / 2, y, { align: 'center' });
-  y += 15;
-
-  // Payment summary
-  doc.setFontSize(11); doc.setFont('times', 'bold');
-  doc.text('PAYMENT SUMMARY', pw / 2, y, { align: 'center' });
-  y += 12;
-
-  const tTop = y, rh = 10;
-  doc.setFillColor(245, 245, 245);
-  doc.rect(mg, tTop, cw, rh, 'F');
-  doc.setFont('times', 'bold');
-  doc.text('DESCRIPTION',   mg + 5,      tTop + 7);
-  doc.text('AMOUNT (GHS)',  pw - mg - 5, tTop + 7, { align: 'right' });
-
-  const bal = d.total - d.paid;
-  [
-    { desc: 'TOTAL SUM',          amt: d.total.toFixed(2), color: null },
-    { desc: 'TOTAL AMOUNT PAID',  amt: d.paid.toFixed(2),  color: [0, 128, 0] },
-    { desc: 'OUTSTANDING BALANCE',amt: bal.toFixed(2),     color: bal > 0 ? [220, 0, 0] : [0, 128, 0] },
-  ].forEach((row, i) => {
-    const rY = tTop + rh + i * rh;
-    if (i % 2 === 0) { doc.setFillColor(247, 247, 247); doc.rect(mg, rY, cw, rh, 'F'); }
-    doc.setFont('times', 'normal'); doc.setTextColor(0, 0, 0);
-    doc.text(row.desc, mg + 5, rY + 7);
-    if (row.color) { doc.setTextColor(...row.color); doc.setFont('times', 'bold'); }
-    doc.text(row.amt, pw - mg - 5, rY + 7, { align: 'right' });
-    doc.setTextColor(0, 0, 0);
-  });
-  y = tTop + rh * 4 + 30;
-
-  // Signature
-  const sigX = mg + cw * 0.64;
-  doc.setFont('times', 'bold');
-  doc.text('Authorized Signature:', sigX, y);
-  y += 15;
-  try {
-    const sigImg = await loadImg('receipts/static/signature.png');
-    doc.addImage(sigImg, 'PNG', sigX, y, 60, 20);
-    y += 25;
-  } catch (e) { y += 10; }
-  doc.setFont('times', 'normal');
-  doc.text('Eyram Dela Kuwornu', sigX, y);
-  doc.setFontSize(9);
-  doc.text('(Director – Forgedcore Engineering Ltd)', sigX, y + 7);
-
-  doc.save('receipt_' + d.invoice_no.replace(/\//g, '_') + '.pdf');
-}
-
-function loadImg(url) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload  = () => resolve(img);
-    img.onerror = () => reject(new Error('Not found'));
-    img.src = url;
-  });
-}
 </script>
 <script src="assets/client-autocomplete.js"></script>
 
