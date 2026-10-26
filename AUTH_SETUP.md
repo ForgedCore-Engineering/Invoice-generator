@@ -23,7 +23,7 @@ The command reads stdin until EOF, validates the entire list, hashes the passwor
 - Failed sign-ins use both account and IP counters with a ten-attempt, fifteen-minute window. Throttling state is private, file-locked and survives session resets.
 - Login and logout require CSRF tokens. Authenticated writes reject mismatched Origin/Referer headers. Existing accounting forms also retain their own CSRF tokens.
 - API requests receive JSON 401 responses when unauthenticated. Page requests redirect to sign-in. Return URLs are restricted to local application PHP pages.
-- Sign out is available in the sidebar; open the navigation menu on mobile.
+- Sign out is available in the sidebar; open the navigation menu on mobile. It ends the session and opens a branded confirmation page with a link back to sign-in. Both authentication screens use the existing company logo and responsive layouts.
 
 Apache rules block direct access to credentials, includes, SQL/workbook/database files, document archives, and generated PDFs. Use authenticated `download.php?file=NAME.pdf` for existing PDFs; public branding images under receipts/static remain available. On another web server, configure equivalent rules. The PHP development server ignores .htaccess and is not a production server.
 
@@ -31,6 +31,6 @@ The PHP process needs write permission on auth-private for throttling and on its
 
 ## Verification
 
-The implementation was checked against an isolated Apache/PHP fixture: 64 HTTP checks cover every page/API gate, direct-file denial, login/logout CSRF, rejected credentials, cookie flags, session ID rotation, cross-site writes and throttling across cookie resets. Ten additional checks cover inactivity/absolute expiry, credential changes and return-URL validation. No production financial records are mutated by these checks.
+The implementation was checked against an isolated Apache/PHP fixture: 68 HTTP checks cover every page/API gate, direct-file denial, login/logout CSRF, rejected credentials, cookie flags, session ID rotation, cross-site writes, the branded sign-out page, public logo/styles and throttling across cookie resets. Ten additional checks cover inactivity/absolute expiry, credential changes and return-URL validation. No production financial records are mutated by these checks.
 
 The HTTP regression script is `tools/test-auth.py`. It expects an isolated localhost Apache fixture containing a single dummy test account (specified in the script), a synthetic receipts/test.pdf, the application files and access rules. Run it only against that disposable fixture; it deliberately triggers account/IP throttling. PHP's built-in server cannot verify Apache .htaccess protection.

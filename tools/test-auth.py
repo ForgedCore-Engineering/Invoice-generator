@@ -47,8 +47,12 @@ logout_token=re.search('action="logout.php".*?name="csrf" value="([^"]+)"',text,
 status,headers,text=req('download.php?file=test.pdf');assert status==200 and text.startswith('%PDF')
 status,headers,text=req('save-receipt.php',data={},headers={'Origin':'https://evil.com'});assert status==403
 status,headers,text=req('logout.php');assert status==405
+status,headers,text=req('signed-out.php');assert status==302 and headers['Location']=='/index.php'
 status,headers,text=req('logout.php',data={'csrf':'wrong'});assert status==403
-status,headers,text=req('logout.php',data={'csrf':logout_token});assert status==303
+status,headers,text=req('logout.php',data={'csrf':logout_token});assert status==303 and headers['Location']=='/signed-out.php'
+status,headers,text=req('signed-out.php');assert status==200 and 'You’re signed out.' in text and 'receipts/static/logo.png' in text
+status,headers,text=req('assets/auth.css');assert status==200 and '.company-logo' in text
+status,headers,text=req('receipts/static/logo.png');assert status==200
 status,headers,text=req('new-receipt.php');assert status==302
 for attempt in range(11):
     status,headers,text=req('login.php');token=re.search('name="csrf" value="([^"]+)"',text).group(1)

@@ -1,0 +1,6 @@
+<?php
+require_once __DIR__.'/auth.php';fc_auth_start();
+if(fc_auth_user()){header('Location: '.fc_auth_base().'index.php',true,302);exit;}
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Signed out · ForgedCore</title><link rel="stylesheet" href="assets/auth.css?v=2"></head><body><main class="auth-shell">
+<?php require __DIR__.'/includes/auth-hero.php'; ?>
+<section class="auth-content"><div class="mobile-brand"><?php require __DIR__.'/includes/auth-brand.php'; ?></div><div class="status-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4"/><path d="M12 3l8 3v6c0 5-8 9-8 9s-8-4-8-9V6l8-3z"/></svg></div><p class="form-kicker">Session ended</p><h1>You’re signed out.</h1><p class="muted signed-out-copy">Thanks for stopping by. Sign in again whenever you’re ready to continue.</p><a class="submit" href="login.php">Back to sign in <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a><p class="auth-note">Your session has been securely closed.</p><p class="auth-bottom">ForgedCore Engineering Ltd · Team workspace</p></section></main></body></html>
