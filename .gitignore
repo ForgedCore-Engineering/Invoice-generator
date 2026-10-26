@@ -13,9 +13,11 @@ database.db
 /accounting-private/*
 !/accounting-private/.htaccess
 
-# Per-deployment credentials and login throttling state
+# Login throttling, archives and temporary files stay local.
+# The approved hashed account configuration deploys through Git.
 /auth-private/*
 !/auth-private/.htaccess
+!/auth-private/users.json
 requirements.txt
 requirement.txt
 # Old templates

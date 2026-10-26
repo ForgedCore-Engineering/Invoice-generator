@@ -4,7 +4,7 @@ All application PHP pages and API endpoints require sign-in before reading data 
 
 ## Provision accounts
 
-The local installation is provisioned separately from Git. Deploy the ignored `auth-private/users.json` to the same private directory on your server through a trusted channel. This file contains email addresses and password hashes, never plaintext passwords. Do not commit it. Without this file the application stays locked.
+The approved `auth-private/users.json` is tracked so the Plesk deployment receives the account list during a Git pull. This file contains email addresses and password hashes, never plaintext passwords. Keep the repository private. Without this file the application stays locked. Apache blocks browser access to the entire auth-private directory; throttling state and deployment archives remain excluded from Git.
 
 To replace the approved account list, supply JSON to the CLI tool on stdin:
 

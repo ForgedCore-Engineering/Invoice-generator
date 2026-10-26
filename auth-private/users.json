@@ -1,0 +1,25 @@
+{
+    "domain": "forgedcoreengineering.com",
+    "users": {
+        "e.kuwornu@forgedcoreengineering.com": {
+            "name": "Eyram Kuwornu",
+            "password_hash": "$2y$10$39BSS8CuntYVsundKIy4WeY0q4KkvGDJ2YH3kUk\/I1XucpPsrnJ3."
+        },
+        "a.agbakpe@forgedcoreengineering.com": {
+            "name": "Adeline Agbakpe",
+            "password_hash": "$2y$10$xTqwxFICW\/Gv5lPpC9syOOKn7Ye8T\/p2GE56uFlvjm8Yw\/co1m6\/e"
+        },
+        "p.asisih@forgedcoreengineering.com": {
+            "name": "Prince Asisih",
+            "password_hash": "$2y$10$W0x2QxNfiB\/JCNjV\/UxToOO4GIjnHQgVLyh3oHyUZ9XRvb7CDp1.O"
+        },
+        "b.sefogah@forgedcoreengineering.com": {
+            "name": "Bright Sefogah",
+            "password_hash": "$2y$10$nZCFzsvKmgB4XgxiclEQ5OLO359EbCkkB6ods2svUZDNmL.wDQTfm"
+        },
+        "c.dongoyo@forgedcoreengineering.com": {
+            "name": "Charles Dongoyo",
+            "password_hash": "$2y$10$JF.hD6NhZCZNk8pdrxv2ouAQRbK0N\/A8rIGPgVvLWEzP0iWst52Pi"
+        }
+    }
+}
