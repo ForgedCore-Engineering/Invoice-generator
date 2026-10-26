@@ -6,6 +6,11 @@ database.db
 *.db
 # Old Python files
 *.py
+!tools/import-accounting.py
+
+# Local accounting source data and generated financial import packages
+/accounting-private/*
+!/accounting-private/.htaccess
 requirements.txt
 requirement.txt
 # Old templates

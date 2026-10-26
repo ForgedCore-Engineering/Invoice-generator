@@ -5,6 +5,10 @@
 <!-- ══════ BOTTOM NAV (mobile ≤640px) ══════ -->
 <?php $cp = basename($_SERVER['PHP_SELF']); ?>
 <nav class="bottom-nav" aria-label="Bottom navigation">
+  <a href="accounting.php" class="bn <?= in_array($cp,['accounting.php','accounting-setup.php'])?'active':'' ?>">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h4v2H7v-2zm6 0h4v2h-4v-2zm-6 4h4v2H7v-2zm6 0h4v2h-4v-2z"/></svg>
+    <span>Accounts</span>
+  </a>
   <a href="index.php" class="bn <?= $cp==='index.php'?'active':'' ?>">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
     <span>Dashboard</span>

@@ -639,12 +639,11 @@ tbody tr:hover td{background:var(--card-h)}
 .bottom-nav{
   display:none;
   position:fixed;bottom:0;left:0;right:0;
-  height:var(--bnh);
+  height:calc(var(--bnh) + env(safe-area-inset-bottom,0px));
   background:var(--bg2);border-top:1px solid var(--br);
   z-index:190;
   align-items:stretch;
   padding:0 4px;
-  safe-area-inset-bottom:env(safe-area-inset-bottom,0);
   padding-bottom:env(safe-area-inset-bottom,0);
 }
 .bn{
@@ -815,7 +814,7 @@ tbody tr:hover td{background:var(--card-h)}
 }
 @media(max-width:640px){
   .bottom-nav{display:flex}
-  .main{margin-bottom:var(--bnh)}
+  .main{margin-bottom:calc(var(--bnh) + env(safe-area-inset-bottom,0px))}
   .tw-c{bottom:calc(var(--bnh) + 10px)}
   .sg{grid-template-columns:repeat(2,1fr)}
   .sg-4{grid-template-columns:repeat(2,1fr)}
@@ -926,6 +925,18 @@ tbody tr:hover td{background:var(--card-h)}
         </div>
       </div>
 
+      <div class="nav-acc" id="acc-accounting">
+        <button class="nav-acc-btn" onclick="toggleAcc('acc-accounting')" aria-expanded="true">
+          Accounting
+          <svg class="chv" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>
+        </button>
+        <div class="nav-items">
+          <a href="accounting.php" class="ni <?= in_array($current_page,['accounting.php','accounting-setup.php'])?'active':'' ?>">
+            <svg class="ni-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v18H3V3zm2 2v14h14V5H5zm2 2h10v2H7V7zm0 4h4v2H7v-2zm6 0h4v2h-4v-2zm-6 4h4v2H7v-2zm6 0h4v2h-4v-2z"/></svg>
+            Accounting & registers
+          </a>
+        </div>
+      </div>
     </nav>
 
     <div class="sb-foot">

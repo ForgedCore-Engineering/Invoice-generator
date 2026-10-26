@@ -1,0 +1,69 @@
+-- Select your existing invoice database before running this additive migration.
+-- No receipt or payslip tables are changed. MySQL 5.7+ / MariaDB 10.2+.
+CREATE TABLE IF NOT EXISTS acct_imports (
+ id INT AUTO_INCREMENT PRIMARY KEY, source_hash CHAR(64) NOT NULL UNIQUE,
+ filename VARCHAR(255) NOT NULL, imported_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+ manifest LONGTEXT NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_source_cells (
+ id INT AUTO_INCREMENT PRIMARY KEY, import_id INT NOT NULL,
+ sheet VARCHAR(100) NOT NULL, address VARCHAR(20) NOT NULL,
+ value_text LONGTEXT NULL, formula LONGTEXT NULL, cell_type VARCHAR(30),
+ UNIQUE KEY source_cell (import_id,sheet,address),
+ FOREIGN KEY (import_id) REFERENCES acct_imports(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_projects (
+ id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL,
+ kind VARCHAR(40) NOT NULL DEFAULT 'Project', start_date DATE NULL, expiry_date DATE NULL,
+ handler VARCHAR(255) NOT NULL DEFAULT '', department VARCHAR(255) NOT NULL DEFAULT '',
+ priority VARCHAR(40) NOT NULL DEFAULT 'Medium', status VARCHAR(40) NOT NULL DEFAULT 'Pending',
+ notes TEXT, source_ref VARCHAR(100) NULL UNIQUE,
+ version INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_engagements (
+ id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL,
+ expected DECIMAL(16,2) NULL, legacy_expected TINYINT NOT NULL DEFAULT 1,
+ notes TEXT, source_ref VARCHAR(100) NULL UNIQUE, version INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_payments (
+ id INT AUTO_INCREMENT PRIMARY KEY, engagement_id INT NOT NULL,
+ amount DECIMAL(16,2) NOT NULL, payment_date DATE NULL, date_original VARCHAR(255) NOT NULL DEFAULT '',
+ notes TEXT, legacy_received TINYINT NOT NULL DEFAULT 1,
+ source_ref VARCHAR(100) NULL UNIQUE, version INT NOT NULL DEFAULT 1,
+ FOREIGN KEY (engagement_id) REFERENCES acct_engagements(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_expenses (
+ id INT AUTO_INCREMENT PRIMARY KEY, amount DECIMAL(16,2) NOT NULL,
+ expense_date DATE NULL, date_original VARCHAR(255) NOT NULL DEFAULT '',
+ description TEXT NOT NULL, payment_details TEXT, notes TEXT,
+ source_ref VARCHAR(100) NULL UNIQUE, version INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_allocations (
+ id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, department VARCHAR(255) NOT NULL,
+ amount DECIMAL(16,2) NOT NULL, sourcer_rate DECIMAL(8,6) NOT NULL DEFAULT .05,
+ dividend_rate DECIMAL(8,6) NOT NULL DEFAULT .1, department_rate DECIMAL(8,6) NOT NULL DEFAULT .35,
+ holdings_rate DECIMAL(8,6) NOT NULL DEFAULT .5,
+ sourcer_override DECIMAL(16,2) NULL, dividend_override DECIMAL(16,2) NULL,
+ department_override DECIMAL(16,2) NULL, holdings_override DECIMAL(16,2) NULL,
+ status VARCHAR(40) NOT NULL DEFAULT 'Not started', notes TEXT,
+ source_ref VARCHAR(100) NULL UNIQUE, version INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_assets (
+ id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL, quantity INT NOT NULL DEFAULT 1,
+ specification TEXT, source_ref VARCHAR(100) NULL UNIQUE, version INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_sims (
+ id INT AUTO_INCREMENT PRIMARY KEY, sim_number VARCHAR(40) NOT NULL,
+ service_id VARCHAR(80) NOT NULL, notes TEXT,
+ source_ref VARCHAR(100) NULL UNIQUE, version INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_reserves (
+ id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255) NOT NULL,
+ amount DECIMAL(16,2) NOT NULL, notes TEXT,
+ source_ref VARCHAR(100) NULL UNIQUE, version INT NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS acct_audit (
+ id INT AUTO_INCREMENT PRIMARY KEY, entity VARCHAR(40) NOT NULL, record_id INT NOT NULL,
+ action VARCHAR(20) NOT NULL, before_json LONGTEXT NULL, after_json LONGTEXT NULL,
+ created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

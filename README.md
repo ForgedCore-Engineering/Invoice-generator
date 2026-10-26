@@ -170,3 +170,7 @@ This application is proprietary software for ForgedCore Engineering Ltd.
 
 For issues or questions, contact: forgedcoreengineering@gmail.com
 
+# Accounting module
+
+The **Accounting & registers** sidebar section adds the workbook's finances, allocations, projects/domains, assets, SIMs and savings to this app. See [ACCOUNTING_SETUP.md](ACCOUNTING_SETUP.md) for installation, source reconciliation and operation. Open `accounting-setup.php` to create tables and import the supplied workbook, or import `accounting-private/accounting_install.sql` into the existing database in phpMyAdmin.
+

@@ -93,6 +93,7 @@ function initDB() {
                 INDEX idx_full_name (full_name)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
         ");
+        $pdo->exec(file_get_contents(__DIR__ . '/accounting_schema.sql'));
         $hasUpdatedAt = $pdo->query("SHOW COLUMNS FROM payslips LIKE 'updated_at'")->fetch();
         if (!$hasUpdatedAt) {
             $pdo->exec("ALTER TABLE payslips ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");

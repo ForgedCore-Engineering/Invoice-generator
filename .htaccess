@@ -11,7 +11,7 @@ AddDefaultCharset UTF-8
 Options -Indexes
 
 # Protect sensitive files
-<FilesMatch "^(config\.php|functions\.php|db_config\.php|composer\.(json|lock)|\.htaccess)$">
+<FilesMatch "(^.*\.(sql|xlsx)$|^(config\.php|functions\.php|db_config\.php|composer\.(json|lock)|\.htaccess)$)">
     Order allow,deny
     Deny from all
 </FilesMatch>

@@ -123,6 +123,8 @@ require_once __DIR__ . '/db_config.php';
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 ");
                 $success[] = "Table 'payslips' created/verified ✓";
+                $pdo->exec(file_get_contents(__DIR__ . '/accounting_schema.sql'));
+                $success[] = "Accounting tables created/verified. Use Accounting setup to import the workbook data.";
                 $hasUpdatedAt = $pdo->query("SHOW COLUMNS FROM payslips LIKE 'updated_at'")->fetch();
                 if (!$hasUpdatedAt) {
                     $pdo->exec("ALTER TABLE payslips ADD COLUMN updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP");
