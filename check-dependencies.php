@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * Quick dependency checker
  * Run this to verify if Composer dependencies are installed

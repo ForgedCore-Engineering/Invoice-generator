@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * Export Receipts to CSV — ForgedCore Receipt Manager
  */

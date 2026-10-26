@@ -1,4 +1,6 @@
 <?php
+require_once dirname(__DIR__) . '/auth.php';
+fc_require_login();
 $current_page = basename($_SERVER['PHP_SELF']);
 ?><!DOCTYPE html>
 <html lang="en" data-theme="dark">
@@ -940,6 +942,13 @@ tbody tr:hover td{background:var(--card-h)}
     </nav>
 
     <div class="sb-foot">
+      <?php $signedIn = fc_auth_user(); if ($signedIn): ?>
+      <div style="font-size:11px;color:var(--txt2);overflow-wrap:anywhere;margin-bottom:10px"><?= htmlspecialchars($signedIn['email'], ENT_QUOTES, 'UTF-8') ?></div>
+      <form method="post" action="logout.php" style="margin-bottom:12px">
+        <input type="hidden" name="csrf" value="<?= htmlspecialchars(fc_auth_csrf(), ENT_QUOTES, 'UTF-8') ?>">
+        <button class="btn btn-s" style="width:100%;min-height:44px;justify-content:center">Sign out</button>
+      </form>
+      <?php endif; ?>
       <div class="sb-foot-txt">
         <strong>ForgedCore Engineering Ltd</strong><br>
         Kpobiman (Amasaman), Accra<br>

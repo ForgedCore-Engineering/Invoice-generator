@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * Client search for autocomplete (new receipt form)
  * GET ?q=search_term  — min 2 characters

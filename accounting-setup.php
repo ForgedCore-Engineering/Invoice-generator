@@ -1,5 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 define('SKIP_DB_INIT',true);
 require __DIR__.'/config.php';
 require __DIR__.'/includes/accounting.php';

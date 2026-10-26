@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 ob_start();

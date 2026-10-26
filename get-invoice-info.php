@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * Get invoice number and date for PDF generation
  * Called via AJAX before generating PDF

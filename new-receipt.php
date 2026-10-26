@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * New Receipt Form — ForgedCore Receipt Manager
  */

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 $page_title = 'All Payslips';
 $page_subtitle = 'View all issued payslips';
 require_once __DIR__ . '/config.php';

@@ -7,10 +7,15 @@ database.db
 # Old Python files
 *.py
 !tools/import-accounting.py
+!tools/test-auth.py
 
 # Local accounting source data and generated financial import packages
 /accounting-private/*
 !/accounting-private/.htaccess
+
+# Per-deployment credentials and login throttling state
+/auth-private/*
+!/auth-private/.htaccess
 requirements.txt
 requirement.txt
 # Old templates

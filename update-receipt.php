@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * Update Receipt API — ForgedCore Receipt Manager
  * Accepts: POST JSON

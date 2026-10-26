@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * Save receipt data to database
  * Called via AJAX after PDF is generated

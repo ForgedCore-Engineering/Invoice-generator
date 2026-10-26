@@ -1,0 +1,4 @@
+# Files are served only by authenticated download.php. Branding images remain public.
+<FilesMatch "(?i)\.(pdf|php|html|json|sql|db)$">
+    Require all denied
+</FilesMatch>

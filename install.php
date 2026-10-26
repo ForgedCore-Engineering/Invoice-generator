@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/auth.php';
+fc_require_login();
 /**
  * Installation script for ForgedCore Receipt Generator
  * Run this once to set up the application
