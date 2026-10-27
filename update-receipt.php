@@ -33,6 +33,7 @@ if ($id <= 0) {
 try {
     $pdo = getDB();
     
+    fc_activity_change($pdo, 'receipt', $id, 'update', function($before) use ($pdo,$input,$id) {
     $sql = "UPDATE clients SET 
             name = ?, 
             address = ?, 
@@ -54,8 +55,11 @@ try {
         $input['date'] ?? '',
         $id
     ]);
+    });
 
     echo json_encode(['success' => true, 'message' => 'Receipt updated successfully']);
+} catch (OutOfBoundsException $e) {
+    http_response_code(404); echo json_encode(['error'=>'Receipt not found']);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);

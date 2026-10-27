@@ -46,6 +46,8 @@ foreach($examples as $entity=>$data){
  $data['version']=2;acct_save($pdo,$entity,$data,true);check(!(bool)$pdo->query('SELECT id FROM acct_'.$entity.' WHERE id='.$id)->fetch(),'Delete '.$entity);
 }
 check((int)$pdo->query('SELECT COUNT(*) FROM acct_audit')->fetchColumn()===24,'Audit create/edit/delete for each register');
+check((int)$pdo->query('SELECT COUNT(*) FROM app_activity')->fetchColumn()===24,'Every accounting change also has a footprint');
+check((int)$pdo->query('SELECT COUNT(*) FROM app_activity WHERE actor_email IS NOT NULL')->fetchColumn()===0,'CLI operations are not falsely attributed to a team member');
 $before=(int)$pdo->query('SELECT COUNT(*) FROM acct_engagements')->fetchColumn();$caught=false;
 try{acct_save($pdo,'engagements',['id'=>1,'version'=>1],true);}catch(PDOException $e){$caught=true;}
 check($caught,'Do not delete account with payments');check((int)$pdo->query('SELECT COUNT(*) FROM acct_engagements')->fetchColumn()===$before,'Failed delete rolled back');

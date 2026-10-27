@@ -8,6 +8,7 @@ database.db
 *.py
 !tools/import-accounting.py
 !tools/test-auth.py
+!tools/test-footprints.py
 
 # Local accounting source data and generated financial import packages
 /accounting-private/*

@@ -31,6 +31,6 @@ The PHP process needs write permission on auth-private for throttling and on its
 
 ## Verification
 
-The implementation was checked against an isolated Apache/PHP fixture: 68 HTTP checks cover every page/API gate, direct-file denial, login/logout CSRF, rejected credentials, cookie flags, session ID rotation, cross-site writes, the branded sign-out page, public logo/styles and throttling across cookie resets. Ten additional checks cover inactivity/absolute expiry, credential changes and return-URL validation. No production financial records are mutated by these checks.
+The implementation was checked against an isolated Apache/PHP fixture: 69 HTTP checks cover every page/API gate (including footprints), direct-file denial, login/logout CSRF, rejected credentials, cookie flags, session ID rotation, cross-site writes, the branded sign-out page, public logo/styles and throttling across cookie resets. Ten additional checks cover inactivity/absolute expiry, credential changes and return-URL validation. No production financial records are mutated by these checks.
 
 The HTTP regression script is `tools/test-auth.py`. It expects an isolated localhost Apache fixture containing a single dummy test account (specified in the script), a synthetic receipts/test.pdf, the application files and access rules. Run it only against that disposable fixture; it deliberately triggers account/IP throttling. PHP's built-in server cannot verify Apache .htaccess protection.

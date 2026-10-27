@@ -27,15 +27,20 @@ if ($id <= 0) {
 
 try {
     $pdo = getDB();
+    $changed = fc_activity_change($pdo, 'payslip', $id, 'delete', function($before) use ($pdo,$id) {
     $stmt = $pdo->prepare("DELETE FROM payslips WHERE id = ?");
     $stmt->execute([$id]);
+        return $stmt->rowCount();
+    });
 
-    if ($stmt->rowCount() > 0) {
+    if ($changed > 0) {
         echo json_encode(['success' => true, 'message' => 'Payslip deleted successfully']);
     } else {
         http_response_code(404);
         echo json_encode(['error' => 'Payslip not found or already deleted']);
     }
+} catch (OutOfBoundsException $e) {
+    http_response_code(404); echo json_encode(['error'=>'Record not found or already deleted']);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);

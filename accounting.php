@@ -103,6 +103,7 @@ $displayFields=$definition['fields'];
 if($view==='allocations')$displayFields=array_intersect_key($displayFields,array_flip(['name','department','amount','status']));
 $accountNames=array_column($accounts,'name','id');
 ?>
+<?php if($edit && !empty($edit['id'])):$footprintEntity='accounting.'.$view;$footprintRecordId=(int)$edit['id'];require __DIR__.'/includes/record-footprint.php';endif?>
 <div class="acct-actions" style="margin-bottom:16px"><h2 style="font-size:20px;margin-right:auto"><?=acct_h($definition['title'])?> <span class="card-sub">(<?=count($rows)?>)</span></h2><a class="btn btn-p" href="accounting.php?view=<?=$view?>&new=1">Add record</a><a class="btn btn-s" href="accounting.php?view=<?=$view?>&export=1">Export CSV</a><button class="btn btn-s" onclick="window.print()">Print</button></div>
 <?php if($view==='allocations'):?><p class="acct-note">Allocation = project amount × percentage, rounded to pesewas. A fixed amount takes precedence, including zero. Variance = project amount − all four allocations.</p><?php endif?>
 <?php if($showForm):$record=$edit??[]; ?>

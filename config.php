@@ -7,6 +7,7 @@ fc_require_login();
 
 // Load database configuration
 require_once __DIR__ . '/db_config.php';
+require_once __DIR__ . '/includes/activity.php';
 
 // Directory paths
 define('RECEIPT_DIR', __DIR__ . '/receipts');
@@ -31,6 +32,7 @@ function getDB() {
         }
         $dsn = "mysql:host=" . $host . ";port=" . $port . ";dbname=" . DB_NAME . ";charset=" . DB_CHARSET;
         $pdo = new PDO($dsn, DB_USER, DB_PASS, DB_OPTIONS);
+        fc_activity_schema($pdo);
         return $pdo;
     } catch (PDOException $e) {
         // If database doesn't exist, try to create it
@@ -117,5 +119,3 @@ if (!defined('SKIP_DB_INIT')) {
         // Don't output anything - let calling code handle it
     }
 }
-?>
-

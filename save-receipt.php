@@ -49,6 +49,7 @@ $pdf_name = 'receipt_' . str_replace('/', '_', $invoice_no) . '.pdf';
 // Save to database
 try {
     $pdo = getDB();
+    $savedId = fc_activity_change($pdo, 'receipt', 0, 'create', function($before) use ($pdo, $name, $address, $contact, $description, $total, $paid, $date, $invoice_no, $pdf_name) {
     $stmt = $pdo->prepare("
         INSERT INTO clients (name, address, contact, description, total, paid, date, invoice_no, pdf_file)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -64,11 +65,13 @@ try {
         $invoice_no,
         $pdf_name
     ]);
+        return (int)$pdo->lastInsertId();
+    });
     
     echo json_encode([
         'success' => true,
         'message' => 'Receipt saved successfully',
-        'id' => $pdo->lastInsertId()
+        'id' => $savedId
     ]);
 } catch (PDOException $e) {
     http_response_code(500);

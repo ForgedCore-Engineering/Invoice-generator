@@ -54,18 +54,23 @@ if ($amount_paid > $amount_due) {
 
 try {
     $pdo = getDB();
+    $changed = fc_activity_change($pdo, 'payslip', $id, 'update', function($before) use ($pdo,$full_name,$service,$amount_due,$amount_paid,$issue_date,$id) {
     $stmt = $pdo->prepare("
         UPDATE payslips
         SET full_name = ?, service = ?, amount_due = ?, amount_paid = ?, issue_date = ?
         WHERE id = ?
     ");
     $stmt->execute([$full_name, $service, $amount_due, $amount_paid, $issue_date, $id]);
+        return $stmt->rowCount();
+    });
 
-    if ($stmt->rowCount() > 0) {
+    if ($changed > 0) {
         echo json_encode(['success' => true, 'message' => 'Payslip updated successfully']);
     } else {
         echo json_encode(['success' => true, 'message' => 'No changes made']);
     }
+} catch (OutOfBoundsException $e) {
+    http_response_code(404); echo json_encode(['error'=>'Payslip not found']);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);

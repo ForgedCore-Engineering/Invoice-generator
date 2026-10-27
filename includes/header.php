@@ -888,6 +888,10 @@ tbody tr:hover td{background:var(--card-h)}
             <svg class="ni-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
             Dashboard
           </a>
+          <a href="footprints.php" class="ni <?= $current_page==='footprints.php'?'active':'' ?>">
+            <svg class="ni-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M9 5H5v16h14V5h-4M9 3h6v4H9zM8 12h8M8 16h6"/></svg>
+            Data footprints
+          </a>
         </div>
       </div>
 

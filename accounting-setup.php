@@ -14,7 +14,16 @@ if($_SERVER['REQUEST_METHOD']==='POST') {
         $pdo=getDB();
         $pdo->exec(file_get_contents(__DIR__.'/accounting_schema.sql'));
         if(isset($_POST['import'])) {
-            $pdo->exec(file_get_contents(__DIR__.'/accounting-private/accounting_data.sql'));
+            $importSql=file_get_contents(__DIR__.'/accounting-private/accounting_data.sql');
+            $importSql=preg_replace('/^START TRANSACTION;\s*$/m','',$importSql,1,$starts);
+            $importSql=preg_replace('/COMMIT;\s*$/','',$importSql,1,$commits);
+            if($starts!==1 || $commits!==1)throw new RuntimeException('Invalid import transaction format.');
+            $pdo->beginTransaction();
+            $pdo->exec($importSql);
+            $importManifest=json_decode(file_get_contents(__DIR__.'/accounting-private/manifest.json'),true);
+            $importQuery=$pdo->prepare('SELECT id FROM acct_imports WHERE source_hash=?');$importQuery->execute([$importManifest['sha256']]);
+            fc_activity_log($pdo,'accounting.workbook',(int)$importQuery->fetchColumn(),'import',null,['filename'=>$importManifest['filename'],'counts'=>$importManifest['counts']]);
+            $pdo->commit();
         }
         $done=true;
     } catch(Throwable $e) {

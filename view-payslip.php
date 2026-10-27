@@ -36,6 +36,7 @@ require_once __DIR__ . '/includes/header.php';
 </div>
 <a href="payslips.php" class="btn btn-s">← Back to Payslips</a>
 <?php else: ?>
+<?php $footprintEntity='payslip';$footprintRecordId=$id;require __DIR__.'/includes/record-footprint.php'; ?>
 
 <div class="breadcrumb">
   <a href="payslips.php" class="btn btn-s btn-sm">All Payslips</a>

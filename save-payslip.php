@@ -57,6 +57,7 @@ if ($amount_paid > $amount_due) {
 
 try {
     $pdo = getDB();
+    $savedId = fc_activity_change($pdo, 'payslip', 0, 'create', function($before) use ($pdo, $full_name, $service, $amount_due, $amount_paid, $payslip_no, $issue_date) {
     $stmt = $pdo->prepare("
         INSERT INTO payslips (full_name, service, amount_due, amount_paid, payslip_no, issue_date, pdf_file)
         VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -72,11 +73,13 @@ try {
         $issue_date,
         $pdf_name
     ]);
+        return (int)$pdo->lastInsertId();
+    });
 
     echo json_encode([
         'success' => true,
         'message' => 'Payslip saved successfully',
-        'id' => $pdo->lastInsertId()
+        'id' => $savedId
     ]);
 } catch (PDOException $e) {
     http_response_code(500);

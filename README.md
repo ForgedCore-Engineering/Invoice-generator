@@ -172,6 +172,8 @@ For issues or questions, contact: forgedcoreengineering@gmail.com
 
 # Accounting module
 
+**Data footprints** records the signed-in email for new entries, edits, payments and deletions across receipts, payslips and accounting. See [FOOTPRINTS.md](FOOTPRINTS.md) for migration, history and verification details.
+
 The whole application now requires an approved company email and password. See [AUTH_SETUP.md](AUTH_SETUP.md) for account provisioning and deployment. The approved hashed account configuration deploys through Git; keep the repository private. Plaintext passwords and login throttling files are not committed. Without approved accounts the app remains locked.
 
 The **Accounting & registers** sidebar section adds the workbook's finances, allocations, projects/domains, assets, SIMs and savings to this app. See [ACCOUNTING_SETUP.md](ACCOUNTING_SETUP.md) for installation, source reconciliation and operation. Open `accounting-setup.php` to create tables and import the supplied workbook, or import `accounting-private/accounting_install.sql` into the existing database in phpMyAdmin.

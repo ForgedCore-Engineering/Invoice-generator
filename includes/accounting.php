@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__.'/activity.php';
 /** Accounting domain rules. Monetary calculations use integer pesewas. */
 function acct_entities() {
     return [
@@ -102,6 +103,7 @@ function acct_save(PDO $pdo,$entity,$input,$delete=false) {
             $s=$pdo->prepare("SELECT * FROM $table WHERE id=?");$s->execute([$id]);$after=$s->fetch();
         }
         $pdo->prepare('INSERT INTO acct_audit(entity,record_id,action,before_json,after_json) VALUES (?,?,?,?,?)')->execute([$entity,$id,$action,$before?json_encode($before):null,$after?json_encode($after):null]);
+        fc_activity_log($pdo,'accounting.'.$entity,$id,$action,$before,$after);
         $pdo->commit();return $id;
     } catch(Throwable $e) {$pdo->rollBack();throw $e;}
 }

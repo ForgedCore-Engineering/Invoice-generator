@@ -20,6 +20,7 @@ def req(path,data=None,headers=None):
     assert not re.search(r'(Warning:|Fatal error:|Parse error:|Notice:)',text),path
     return response.code,response.headers,text
 pages=['index.php','accounting.php','accounting-setup.php','clients.php','payslips.php','new-receipt.php','new-payslip.php','edit-receipt.php','edit-payslip.php','view-receipt.php','view-payslip.php','download.php?file=test.pdf','export-csv.php','setup-database.php','install.php','check-dependencies.php','check-extensions.php','enable-gd-helper.php','submit.php']
+pages.append('footprints.php')
 for path in pages:
     status,headers,text=req(path)
     assert status==302 and 'login.php' in headers.get('Location',''),path

@@ -1,0 +1,28 @@
+<?php
+require_once __DIR__.'/auth.php';fc_require_login();
+define('SKIP_DB_INIT',true);require_once __DIR__.'/config.php';
+function fp_h($v){return htmlspecialchars((string)($v??''),ENT_QUOTES,'UTF-8');}
+$page_title='Data footprints';$page_subtitle='Who entered or changed your records';
+$email=trim((string)($_GET['email']??''));$entity=trim((string)($_GET['entity']??''));$record=max(0,(int)($_GET['record']??0));$page=max(1,min(1000000,(int)($_GET['page']??1)));
+$rows=[];$total=0;$modules=[];$error=null;$params=[];$where=[];
+if($email!==''){$where[]='actor_email=?';$params[]=$email;}
+if($entity!==''){$where[]='entity=?';$params[]=$entity;}
+if($record){$where[]='record_id=?';$params[]=$record;}
+$sqlWhere=$where?' WHERE '.implode(' AND ',$where):'';
+try {
+    $pdo=getDB();$modules=$pdo->query('SELECT DISTINCT entity FROM app_activity ORDER BY entity')->fetchAll(PDO::FETCH_COLUMN);
+    $s=$pdo->prepare('SELECT COUNT(*) FROM app_activity'.$sqlWhere);$s->execute($params);$total=(int)$s->fetchColumn();$page=min($page,max(1,(int)ceil($total/50)));$offset=($page-1)*50;
+    $s=$pdo->prepare('SELECT * FROM app_activity'.$sqlWhere.' ORDER BY id DESC LIMIT 50 OFFSET '.$offset);$s->execute($params);$rows=$s->fetchAll();
+}catch(Throwable $e){error_log('Footprints: '.$e->getMessage());$error='Footprints are unavailable. Check your database connection.';}
+require __DIR__.'/includes/header.php';
+?>
+<style>.main,.pg{min-width:0}.fp-filters{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin-bottom:18px}.fp-filters label{display:flex;flex-direction:column;gap:5px;color:var(--txt2);font-size:12px;flex:1 1 190px;min-width:0}.fp-filters input,.fp-filters select{background:var(--inp);color:var(--txt);border:1px solid var(--br);padding:10px;border-radius:8px;min-height:44px;width:100%;font:inherit}.fp-filters .btn{min-height:44px}.fp-wrap{overflow:auto}.fp-table{width:100%;border-collapse:collapse;font-size:12px}.fp-table th,.fp-table td{padding:13px 16px;border-bottom:1px solid var(--br);text-align:left;vertical-align:top}.fp-table th{background:var(--bg2);white-space:nowrap}.fp-table td{overflow-wrap:anywhere}.fp-table pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:460px;font-size:11px;color:var(--txt2);margin-top:12px}.fp-meta{font-size:12px;color:var(--txt2);margin:12px 0}.fp-pages{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:18px}.fp-action{color:var(--acc);text-transform:capitalize}.fp-table summary{cursor:pointer;color:var(--acc)}@media(max-width:640px){.fp-table,.fp-table tbody,.fp-table tr,.fp-table td{display:block;width:100%}.fp-table thead{display:none}.fp-table tr{padding:10px 14px;border-bottom:1px solid var(--br)}.fp-table td{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;border:0;padding:9px 0}.fp-table td:before{content:attr(data-label);color:var(--txt3)}.fp-filters input,.fp-filters select{font-size:16px}.fp-table summary{min-height:44px}.fp-pages .btn{min-height:44px}}
+</style>
+<p class="fp-meta">Every new data change records the signed-in email, the action, the time, and the values before and after. Times are shown in Africa/Accra. Historical and imported entries have no assumed author.</p>
+<form method="get" class="fp-filters"><label>Team member email<input name="email" type="email" value="<?=fp_h($email)?>" placeholder="All team members"></label><label>Register<select name="entity"><option value="">All registers</option><?php foreach($modules as $module):?><option value="<?=fp_h($module)?>" <?=$module===$entity?'selected':''?>><?=fp_h(ucwords(str_replace(['accounting.','_'],['Accounting: ',' '],$module)))?></option><?php endforeach?></select></label><label>Record ID<input name="record" type="number" min="1" value="<?=$record?:''?>" placeholder="All records"></label><button class="btn btn-p">Apply filters</button><a class="btn btn-s" href="footprints.php">Clear</a></form>
+<?php if($error):?><div class="err-box" role="alert"><?=fp_h($error)?></div><?php endif?>
+<div class="card"><div class="card-hdr"><h2 class="card-title">Activity trail</h2><span class="card-sub"><?=$total?> changes</span></div><div class="fp-wrap"><table class="fp-table"><thead><tr><th>When</th><th>Who</th><th>Register / record</th><th>Action</th><th>Details</th></tr></thead><tbody>
+<?php foreach($rows as $r):?><tr><td data-label="When"><?=fp_h($r['created_at'])?></td><td data-label="Who"><?=fp_h($r['actor_email']??'System / import')?></td><td data-label="Record"><?=fp_h(str_replace(['accounting.','_'],['Accounting: ',' '],$r['entity']))?> #<?=(int)$r['record_id']?></td><td data-label="Action" class="fp-action"><?=fp_h($r['action'])?></td><td data-label="Details"><details><summary>View changes</summary><pre><?=fp_h(json_encode(['before'=>json_decode($r['before_json']??'null',true),'after'=>json_decode($r['after_json']??'null',true)],JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE))?></pre></details></td></tr><?php endforeach?>
+</tbody></table><?php if(!$rows):?><p class="fp-meta" style="padding:18px">No changes recorded for these filters. New entries and edits will appear here.</p><?php endif?></div></div>
+<?php $query=$_GET;unset($query['page']);$pages=max(1,(int)ceil($total/50));?><nav class="fp-pages" aria-label="Activity pages"><?php if($page>1):?><a class="btn btn-s" href="?<?=fp_h(http_build_query(array_merge($query,['page'=>$page-1])))?>">Previous</a><?php else:?><span></span><?php endif?><span class="fp-meta">Page <?=$page?> of <?=$pages?></span><?php if($page<$pages):?><a class="btn btn-s" href="?<?=fp_h(http_build_query(array_merge($query,['page'=>$page+1])))?>">Next</a><?php else:?><span></span><?php endif?></nav>
+<?php require __DIR__.'/includes/footer.php'; ?>

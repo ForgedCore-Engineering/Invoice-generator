@@ -2,7 +2,7 @@
 require_once __DIR__ . '/auth.php';
 fc_require_login();
 /**
- * Record Payment API — ForgedCore Receipt & Payslip Manager
+ * Record Payment API â€” ForgedCore Receipt & Payslip Manager
  *
  * POST JSON body:
  *   { "id": <int>, "type": "receipt"|"payslip", "new_payment": <float> }
@@ -48,83 +48,22 @@ if ($new_payment <= 0) {
 }
 
 try {
-    $pdo = getDB();
-
-    if ($type === 'receipt') {
-        /* ── receipts live in the `clients` table ── */
-        $stmt = $pdo->prepare("SELECT total, paid FROM clients WHERE id = ?");
-        $stmt->execute([$id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Receipt not found']);
-            exit;
-        }
-
-        $total       = (float)$row['total'];
-        $already_paid = (float)$row['paid'];
-        $outstanding = $total - $already_paid;
-
-        if ($outstanding <= 0) {
-            http_response_code(400);
-            echo json_encode(['error' => 'This receipt is already fully paid']);
-            exit;
-        }
-        // Cap the payment to what's still outstanding
-        $applied = min($new_payment, $outstanding);
-        $new_paid = $already_paid + $applied;
-
-        $upd = $pdo->prepare("UPDATE clients SET paid = ? WHERE id = ?");
-        $upd->execute([$new_paid, $id]);
-
-        echo json_encode([
-            'success'      => true,
-            'applied'      => round($applied, 2),
-            'new_paid'     => round($new_paid, 2),
-            'total'        => round($total, 2),
-            'outstanding'  => round($total - $new_paid, 2),
-            'capped'       => ($applied < $new_payment), // true if input was over-capped
-            'message'      => 'Payment of GH₵ ' . number_format($applied, 2) . ' recorded successfully',
-        ]);
-
-    } else {
-        /* ── payslips table ── */
-        $stmt = $pdo->prepare("SELECT amount_due, amount_paid FROM payslips WHERE id = ?");
-        $stmt->execute([$id]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row) {
-            http_response_code(404);
-            echo json_encode(['error' => 'Payslip not found']);
-            exit;
-        }
-
-        $amount_due   = (float)$row['amount_due'];
-        $already_paid = (float)$row['amount_paid'];
-        $outstanding  = $amount_due - $already_paid;
-
-        if ($outstanding <= 0) {
-            http_response_code(400);
-            echo json_encode(['error' => 'This payslip is already fully paid']);
-            exit;
-        }
-        $applied  = min($new_payment, $outstanding);
-        $new_paid = $already_paid + $applied;
-
-        $upd = $pdo->prepare("UPDATE payslips SET amount_paid = ? WHERE id = ?");
-        $upd->execute([$new_paid, $id]);
-
-        echo json_encode([
-            'success'      => true,
-            'applied'      => round($applied, 2),
-            'new_paid'     => round($new_paid, 2),
-            'amount_due'   => round($amount_due, 2),
-            'outstanding'  => round($amount_due - $new_paid, 2),
-            'capped'       => ($applied < $new_payment),
-            'message'      => 'Payment of GH₵ ' . number_format($applied, 2) . ' recorded successfully',
-        ]);
-    }
-
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
+    $pdo=getDB();
+    $result=fc_activity_change($pdo,$type,$id,'payment',function($row) use ($pdo,$type,$id,$new_payment) {
+        $dueKey=$type==='receipt'?'total':'amount_due';$paidKey=$type==='receipt'?'paid':'amount_paid';
+        $table=$type==='receipt'?'clients':'payslips';
+        $total=(float)$row[$dueKey];$already_paid=(float)$row[$paidKey];$outstanding=$total-$already_paid;
+        if($outstanding<=0)throw new DomainException('This record is already fully paid');
+        $applied=min($new_payment,$outstanding);$new_paid=$already_paid+$applied;
+        $pdo->prepare("UPDATE $table SET $paidKey=? WHERE id=?")->execute([$new_paid,$id]);
+        return ['success'=>true,'applied'=>round($applied,2),'new_paid'=>round($new_paid,2),$dueKey=>round($total,2),'outstanding'=>round($total-$new_paid,2),'capped'=>$applied<$new_payment,'message'=>'Payment of GH₵ '.number_format($applied,2).' recorded successfully'];
+    });
+    echo json_encode($result);
+} catch(OutOfBoundsException $e) {
+    http_response_code(404);echo json_encode(['error'=>'Record not found']);
+} catch(DomainException $e) {
+    http_response_code(400);echo json_encode(['error'=>$e->getMessage()]);
+} catch(Throwable $e) {
+    error_log('Record payment failed: '.$e->getMessage());
+    http_response_code(500);echo json_encode(['error'=>'Could not record the payment. No changes were saved.']);
 }
